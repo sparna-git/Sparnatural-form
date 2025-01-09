@@ -1,0 +1,20 @@
+//Buttons
+@use 'sparnatural/src/assets/stylesheets/components/buttons/unselectbtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/optionalarrow.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/resetbtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/selectviewvariablebtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/AddUserInputBtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/InfoBtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/AddMoreValuesBtn.scss';
+@use 'sparnatural/src/assets/stylesheets/components/buttons/editBtn.scss';
+//Widget
+@use 'sparnatural/src/assets/stylesheets/components/widget/EndClassWidgetGroup.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/EndClassWidgetValue.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/WidgetWrapper.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/AutocompleteWidget.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/ListWidget.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/MapWidget.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/TreeWidget.scss';
+@use 'sparnatural/src/assets/stylesheets/components/widget/Widgets.scss';
+// LoadingSpinner
+@use 'sparnatural/src/assets/stylesheets/components/widget/LoadingSpinner.scss';

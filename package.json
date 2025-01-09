@@ -1,0 +1,54 @@
+{
+  "name": "sparnatural-form",
+  "version": "1.0.0",
+  "description": "A search form generator based on a Sparnatural query",
+  "main": "dist/sparnatural-form.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode production",
+    "start": "webpack-dashboard -- webpack serve --hot --config webpack.config.js --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sparna-git/Sparnatural-form.git"
+  },
+  "keywords": [
+    "SPARQL",
+    "RDF",
+    "Sparnatural"
+  ],
+  "author": "Sparna",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sparna-git/Sparnatural-form/issues"
+  },
+  "homepage": "https://github.com/sparna-git/Sparnatural-form#readme",
+  "devDependencies": {
+    "@types/awesomplete": "^1.1.16",
+    "@types/jquery": "^3.5.32",
+    "@types/leaflet": "^1.9.16",
+    "@types/n3": "^1.21.1",
+    "@types/select2": "^4.0.63",
+    "@types/sortablejs": "^1.15.8",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "filemanager-webpack-plugin": "^8.0.0",
+    "html-webpack-plugin": "^5.6.3",
+    "mini-css-extract-plugin": "^2.9.2",
+    "sass": "^1.83.1",
+    "sass-loader": "^16.0.4",
+    "ts-loader": "^9.5.1",
+    "url-loader": "^4.1.1",
+    "webpack": "^5.97.1",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-cli": "^6.0.1",
+    "webpack-dashboard": "^3.3.8",
+    "webpack-dev-server": "^5.2.0",
+    "write-file-webpack-plugin": "^4.5.1"
+  },
+  "dependencies": {
+    "querystring-es3": "^0.2.1",
+    "sparnatural": "^10.1.2",
+    "stream-browserify": "^3.0.0",
+    "url": "^0.11.4"
+  }
+}
