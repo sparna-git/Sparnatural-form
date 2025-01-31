@@ -1,6 +1,9 @@
 import { WidgetFactory } from "sparnatural/src/sparnatural/components/builder-section/groupwrapper/criteriagroup/edit-components/WidgetFactory";
 import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
-import { Branch, ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson";
+import {
+  Branch,
+  ISparJson,
+} from "sparnatural/src/sparnatural/generators/json/ISparJson";
 import { I18n } from "sparnatural/src/sparnatural/settings/I18n";
 import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
 import SparnaturalSpecificationFactory from "sparnatural/src/sparnatural/spec-providers/SparnaturalSpecificationFactory";
@@ -150,14 +153,17 @@ class SparnaturalFormComponent extends HTMLComponent {
             this.makeFormScrollable();
           }
 
-          // Ajouter les boutons Reset/Search
+          // Ajouter les boutons Reset/Search sans ID
           if (this.settings.submitButton) {
-            let id = "submit";
             const submitBtn = document.createElement("div");
-            submitBtn.setAttribute("id", id);
             submitBtn.setAttribute("class", "submitSection");
             this.html[0].appendChild(submitBtn);
-            this.SubmitSection = new SubmitSection(this, id, this.settings);
+            this.SubmitSection = new SubmitSection(
+              this,
+              $(submitBtn),
+              this.settings
+            );
+
             this.SubmitSection.render();
           }
 
