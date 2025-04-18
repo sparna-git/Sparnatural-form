@@ -26,6 +26,22 @@ module.exports = {
       },
       {
         test: /\.ts$/,
+        /*
+        exclude: [
+            {
+            // exclude all node_modules from running through this loader
+            and: [path.resolve(__dirname, "node_modules")],
+            // exception: include these node_modules
+            not: [
+              // add any node_modules that should be run through here
+              path.resolve(
+                __dirname,
+                "node_modules/sparnatural"
+              ),
+            ]
+          }
+        ],
+        */
         use: {
           loader: "ts-loader",
           options: {
@@ -118,10 +134,6 @@ module.exports = {
         }
       ],
     }),
-
-    new DashboardPlugin(),
-
-    new BundleAnalyzerPlugin(),
 
     // so that JQuery is automatically inserted
     new webpack.ProvidePlugin({
