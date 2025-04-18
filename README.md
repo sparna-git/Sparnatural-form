@@ -23,3 +23,7 @@ Sparnatural-form is meant to be a simple front-end for non-technical users that 
 - Colors can be customized with the same theme CSS as Sparnatural
 
 ## What it looks like
+
+Watch this 1:00 screencast to see how Sparnatural-form looks like:
+
+[![](docs/images/sparnatural-form-video.png)](https://youtu.be/hNNghuMeoAc?feature=shared)
