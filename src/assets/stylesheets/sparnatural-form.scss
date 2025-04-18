@@ -45,7 +45,6 @@ sparnatural-form {
   .value-display-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 1px;
   }
 
   // Each selected value container
@@ -315,7 +314,6 @@ sparnatural-form {
     border-radius: 5px;
     font-size: 13px;
     color: var(--default-text-color);
-    border: 1px solid var(--primary-color-medium);
     font-weight: normal;
   }
 

@@ -179,7 +179,7 @@ class OptionalCriteriaManager {
         // Créer une "pill" pour Any Value
         const pill = document.createElement("div");
         pill.className = "option-pill any-value";
-        pill.textContent = "Any Value";
+        pill.textContent = "any value";
 
         // Bouton de suppression (croix)
         const unselectBtn = document.createElement("span");
@@ -236,7 +236,7 @@ class OptionalCriteriaManager {
         // Créer une "pill" pour Not Exist
         const pill = document.createElement("div");
         pill.className = "option-pill not-exist";
-        pill.textContent = "Not Exist";
+        pill.textContent = "not exist";
 
         // Bouton de suppression (croix)
         const unselectBtn = document.createElement("span");
