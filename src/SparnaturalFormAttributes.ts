@@ -1,5 +1,4 @@
 import { Form } from "./sparnatural-form/FormStructure";
-import { SparnaturalFormElement } from "./SparnaturalFormElement";
 
 /**
  * Reads the HTML attributes of the sparnatural-form element

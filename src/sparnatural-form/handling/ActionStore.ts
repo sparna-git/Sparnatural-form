@@ -71,7 +71,10 @@ class ActionStoreForm {
       "submit",
       (event: CustomEvent) => {
         console.log("Submit event received", event.detail);
-        console.log("ActionStoreForm: Submit event received", event.detail.type);
+        console.log(
+          "ActionStoreForm: Submit event received",
+          event.detail.type
+        );
         new QueryGeneratorForm(this).generateQuery(event.detail.type);
       }
     );

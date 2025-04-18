@@ -34,9 +34,7 @@ export class QueryGeneratorForm {
       queryToUse,
       sparnaturalForm.formConfig
     );
-    const finalCleanQuery = cleanQueryProcessor.cleanQueryToUse(
-      resultType
-    );
+    const finalCleanQuery = cleanQueryProcessor.cleanQueryToUse(resultType);
 
     //console.log("Final Clean Query for SPARQL generation:", finalCleanQuery);
 

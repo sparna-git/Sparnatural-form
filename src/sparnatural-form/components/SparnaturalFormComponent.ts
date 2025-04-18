@@ -66,10 +66,6 @@ class SparnaturalFormComponent extends HTMLComponent {
     const formVariables = this.formConfig.bindings.map(
       (binding: Binding) => binding.variable
     );
-    console.log("formVariables", formVariables);
-    const queryVariables = this.jsonQuery.variables.map((v: any) => v.value);
-    console.log("queryVariables", queryVariables);
-    console.log("queryVariables", queryVariables);
 
     // Adjust optional flags for all branches without removing them
     this.adjustOptionalFlags(copiedQuery.branches);
@@ -148,10 +144,7 @@ class SparnaturalFormComponent extends HTMLComponent {
             fieldGenerator.generateField();
           });
 
-          // Détection du nombre de champs pour rendre la section sticky
-          if (formConfig.bindings.length > 10) {
-            this.makeFormScrollable();
-          }
+          this.makeFormScrollable();
 
           // Ajouter les boutons Reset/Search sans ID
           if (this.settings.submitButton) {
@@ -183,21 +176,6 @@ class SparnaturalFormComponent extends HTMLComponent {
     });
 
     return this;
-  }
-
-  // Méthode pour rendre le formulaire scrollable et ajouter un espace pour la SubmitSection
-  makeFormScrollable1(): void {
-    const formContainer = this.html[0];
-    const containerDiv = document.createElement("div");
-    containerDiv.classList.add("sparnatural-form-container");
-
-    // Déplacer le contenu du formulaire dans le conteneur scrollable
-    while (formContainer.firstChild) {
-      containerDiv.appendChild(formContainer.firstChild);
-    }
-
-    // Ajouter le conteneur au formulaire principal
-    formContainer.appendChild(containerDiv);
   }
 
   makeFormScrollable(): void {
