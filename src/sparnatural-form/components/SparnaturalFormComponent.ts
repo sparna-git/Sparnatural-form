@@ -1,16 +1,14 @@
-import { WidgetFactory } from "sparnatural/src/sparnatural/components/builder-section/groupwrapper/criteriagroup/edit-components/WidgetFactory";
-import HTMLComponent from "sparnatural/src/sparnatural/components/HtmlComponent";
+import { I18n, SparnaturalSpecificationFactory, WidgetFactory } from "sparnatural";
+import { HTMLComponent } from "sparnatural";
 import {
   Branch,
-  ISparJson,
-} from "sparnatural/src/sparnatural/generators/json/ISparJson";
-import { I18n } from "sparnatural/src/sparnatural/settings/I18n";
-import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
-import SparnaturalSpecificationFactory from "sparnatural/src/sparnatural/spec-providers/SparnaturalSpecificationFactory";
+  SparnaturalQueryIfc,
+} from "sparnatural";
+import { ISparnaturalSpecification } from "sparnatural";
 import ISettings from "../settings/ISettings";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import ActionStoreForm from "../handling/ActionStore"; // Importer le store
-import { Catalog } from "sparnatural/src/sparnatural/settings/Catalog";
+import { Catalog } from "sparnatural";
 import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
 import FormField from "./FormField";
@@ -28,9 +26,9 @@ class SparnaturalFormComponent extends HTMLComponent {
   specProvider: ISparnaturalSpecification;
 
   // The JSON query from the "query" attribute
-  jsonQuery: ISparJson;
+  jsonQuery: SparnaturalQueryIfc;
 
-  cleanQueryResult: ISparJson | null; // Ajout pour stocker la clean query
+  cleanQueryResult: SparnaturalQueryIfc | null; // Ajout pour stocker la clean query
 
   actionStoreForm: ActionStoreForm; // Ajouter une référence à l'ActionStoreForm
 
@@ -46,7 +44,7 @@ class SparnaturalFormComponent extends HTMLComponent {
   }
 
   //methode to handle the optional branches of the query and return the adjusted query
-  public HandleOptional(): ISparJson | null {
+  public HandleOptional(): SparnaturalQueryIfc | null {
     //verify if the query is initialized
     if (!this.jsonQuery || !this.jsonQuery.branches) {
       console.error(
@@ -115,7 +113,7 @@ class SparnaturalFormComponent extends HTMLComponent {
     this.initSpecificationProvider((sp: ISparnaturalSpecification) => {
       this.specProvider = sp;
 
-      this.initJsonQuery((query: ISparJson) => {
+      this.initJsonQuery((query: SparnaturalQueryIfc) => {
         this.jsonQuery = query;
         this.actionStoreForm = new ActionStoreForm(this, this.specProvider);
 
@@ -265,12 +263,12 @@ class SparnaturalFormComponent extends HTMLComponent {
    * Reads the Sparnatural query
    * @param callback
    */
-  initJsonQuery(callback: (query: ISparJson) => void) {
+  initJsonQuery(callback: (query: SparnaturalQueryIfc) => void) {
     let queryUrl = this.settings.query;
 
     $.when(
       $.getJSON(queryUrl, function (data) {
-        callback(data as ISparJson);
+        callback(data as SparnaturalQueryIfc);
       }).fail(function (response) {
         console.error(
           "Sparnatural - unable to load JSON query file : " + queryUrl

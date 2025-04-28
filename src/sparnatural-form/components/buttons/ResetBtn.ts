@@ -1,4 +1,4 @@
-import { I18n } from "sparnatural/src/sparnatural/settings/I18n";
+import { I18n } from "sparnatural";
 class ResetBtn {
   callback: () => void;
   buttonElement: JQuery<HTMLElement>;

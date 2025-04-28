@@ -1,14 +1,14 @@
-import { WidgetFactory } from "sparnatural/src/sparnatural/components/builder-section/groupwrapper/criteriagroup/edit-components/WidgetFactory";
+import { WidgetFactory } from "sparnatural";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
-import UnselectBtn from "sparnatural/src/sparnatural/components/buttons/UnselectBtn";
+import { UnselectBtn } from "sparnatural";
 import {
   Branch,
   CriteriaLine,
-  ISparJson,
-} from "sparnatural/src/sparnatural/generators/json/ISparJson";
-import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
+  SparnaturalQueryIfc,
+} from "sparnatural";
+import { ISparnaturalSpecification } from "sparnatural";
 import OptionalCriteriaManager from "./optionalCriteria/OptionalCriteriaManager";
-import { AbstractWidget } from "sparnatural/src/sparnatural/components/widgets/AbstractWidget";
+import { AbstractWidget } from "sparnatural";
 import { Binding } from "../FormStructure";
 import tippy from "tippy.js";
 
@@ -16,7 +16,7 @@ class FormField {
   private binding: Binding;
   private formContainer: HTMLElement;
   private specProvider: ISparnaturalSpecification;
-  private query: ISparJson;
+  private query: SparnaturalQueryIfc;
   private widgetFactory: WidgetFactory;
   private optionalCriteriaManager!: OptionalCriteriaManager; // Optional Criteria Manager instance
 
@@ -24,7 +24,7 @@ class FormField {
     binding: Binding,
     formContainer: HTMLElement,
     specProvider: ISparnaturalSpecification,
-    query: ISparJson,
+    query: SparnaturalQueryIfc,
     widgetFactory: WidgetFactory
   ) {
     this.binding = binding;

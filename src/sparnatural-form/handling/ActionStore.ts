@@ -1,5 +1,5 @@
 import SparnaturalFormComponent from "../components/SparnaturalFormComponent";
-import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
+import { ISparnaturalSpecification } from "sparnatural";
 import { QueryGeneratorForm } from "./actions/GenerateQueryForm";
 
 class ActionStoreForm {

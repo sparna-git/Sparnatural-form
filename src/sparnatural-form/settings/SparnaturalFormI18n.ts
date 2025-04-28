@@ -1,4 +1,4 @@
-import { Binding, Form } from "../FormStructure";
+import { Form } from "../FormStructure";
 
 /*export class SparnaturalFormI18n {
   static i18nLabelsResources: any = {

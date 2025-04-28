@@ -1,7 +1,7 @@
 import {
   Branch,
-  ISparJson,
-} from "sparnatural/src/sparnatural/generators/json/ISparJson";
+  SparnaturalQueryIfc,
+} from "sparnatural";
 import { Binding, Form } from "../FormStructure";
 
 /**
@@ -12,12 +12,12 @@ import { Binding, Form } from "../FormStructure";
  */
 
 class CleanQuery {
-  private query: ISparJson;
+  private query: SparnaturalQueryIfc;
   // Thomas : this is not used anymore (05/02/2025)
   private variablesUsedInFormConfig: string[];
   private formConfig: Form;
 
-  constructor(query: ISparJson, formConfig: Form) {
+  constructor(query: SparnaturalQueryIfc, formConfig: Form) {
     this.query = query;
     this.formConfig = formConfig;
   }
@@ -28,9 +28,9 @@ class CleanQuery {
   }
 
   //methods to clean the querytouse
-  cleanQueryToUse(resultType: "onscreen" | "export"): ISparJson {
+  cleanQueryToUse(resultType: "onscreen" | "export"): SparnaturalQueryIfc {
     // deep copy of the initial query
-    let cleanQueryResult: ISparJson = JSON.parse(JSON.stringify(this.query));
+    let cleanQueryResult: SparnaturalQueryIfc = JSON.parse(JSON.stringify(this.query));
 
     // remove selected variables if onscreen display
     // we remove variables from the SELECT clause
@@ -109,7 +109,7 @@ class CleanQuery {
   /**
    * @return the array of all queries that are used in the query result, either directly or as aggregated variables
    */
-  private getVariablesUsedInResultSet(theQuery: ISparJson): string[] {
+  private getVariablesUsedInResultSet(theQuery: SparnaturalQueryIfc): string[] {
     if (!theQuery.variables) return [];
     else {
       return Array.isArray(theQuery.variables)
@@ -149,10 +149,10 @@ class CleanQuery {
    * @returns
    */
   private removeUnusedVariablesFromSelect(
-    query: ISparJson,
+    query: SparnaturalQueryIfc,
     resultType: "onscreen" | "export",
     formConfig: Form
-  ): ISparJson {
+  ): SparnaturalQueryIfc {
     if (resultType == "onscreen") {
       query.variables = query.variables.filter((v) => {
         // retain only the columns that are useful for an onscreen display

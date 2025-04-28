@@ -1,12 +1,12 @@
 import $ from "jquery";
-import "./assets/stylesheets/sparnatural-form.scss";
+require("./assets/stylesheets/sparnatural-form.scss");
 import SparnaturalFormComponent from "./sparnatural-form/components/SparnaturalFormComponent";
 import { SparnaturalFormAttributes } from "./SparnaturalFormAttributes";
 import { defaultSettings, extend } from "./sparnatural-form/settings/Settings";
 import {
   SparqlHandlerFactory,
   SparqlHandlerIfc,
-} from "sparnatural/src/sparnatural/components/widgets/data/SparqlHandler";
+} from "sparnatural";
 import ISettings from "./sparnatural-form/settings/ISettings";
 
 /*
