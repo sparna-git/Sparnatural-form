@@ -46,6 +46,7 @@
     "write-file-webpack-plugin": "^4.5.1"
   },
   "dependencies": {
+    "@chenfengyuan/datepicker": "^1.0.10",
     "querystring-es3": "^0.2.1",
     "sparnatural": "^10.1.2",
     "stream-browserify": "^3.0.0",
