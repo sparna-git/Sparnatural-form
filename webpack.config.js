@@ -7,6 +7,7 @@ const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
 
 module.exports = {
   entry: {
@@ -22,31 +23,12 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: { loader: "babel-loader" },
+        use: { loader: "babel-loader" }
       },
       {
         test: /\.ts$/,
-        /*
-        exclude: [
-            {
-            // exclude all node_modules from running through this loader
-            and: [path.resolve(__dirname, "node_modules")],
-            // exception: include these node_modules
-            not: [
-              // add any node_modules that should be run through here
-              path.resolve(
-                __dirname,
-                "node_modules/sparnatural"
-              ),
-            ]
-          }
-        ],
-        */
         use: {
-          loader: "ts-loader",
-          options: {
-            allowTsInNodeModules: true
-          },
+          loader: "ts-loader"
         }
       },
       {
@@ -63,18 +45,19 @@ module.exports = {
           },
           {
             loader: "sass-loader", // compiles Sass to CSS
+            options: {
+              sassOptions: {
+                includePaths: ['node_modules']
+              }
+            }
           },
         ],
       },
       {
         test: /\.css$/,
         use: [
-          {
-            loader: MiniCssExtractPlugin.loader,
-          },
-          {
-            loader: "css-loader", // translates CSS into CommonJS
-          },
+            MiniCssExtractPlugin.loader,
+            "css-loader"
         ],
       },
       {
@@ -105,7 +88,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      filename: "dev-page/index.html", // Utiliser un nom différent pour la nouvelle page
+      filename: "dev-page/index.html",
       template: __dirname + "/dev-page/index.html",
       inject: false,
       templateParameters: (compilation, assets) => {
@@ -123,6 +106,7 @@ module.exports = {
       filename: "[name].css",
       chunkFilename: "[id].css",
     }),
+
     new CopyPlugin({
       patterns: [
         {
@@ -134,6 +118,9 @@ module.exports = {
         }
       ],
     }),
+
+
+    new StatoscopeWebpackPlugin(),
 
     // so that JQuery is automatically inserted
     new webpack.ProvidePlugin({

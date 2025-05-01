@@ -1,4 +1,3 @@
-@use "sparnatural/src/assets/stylesheets/base";
 // Importing all the components
 @use "./components/all-components-sparnatural-form.scss";
 // we need to import that CSS explicitly so that for mcan work without importing it in the HTML page
@@ -6,7 +5,7 @@
 // we are importing one default theme,
 // so that all the variables have a default value.
 // they can be overriden by importing another theme CSS in the HTML page
-@import "sparnatural/src/assets/stylesheets/themes/sparnatural-theme-grass.css";
+@import "sparnatural/scss/themes/sparnatural-theme-grass.css";
 
 sparnatural-form {
   //display: block;

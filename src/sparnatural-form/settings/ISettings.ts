@@ -1,9 +1,9 @@
-import { AutocompleteConfiguration } from "sparnatural/src/sparnatural/components/widgets/AutoCompleteWidget";
-import { SparqlHandlerIfc } from "sparnatural/src/sparnatural/components/widgets/data/SparqlHandler";
-import { ListConfiguration } from "sparnatural/src/sparnatural/components/widgets/ListWidget";
-import { MapConfiguration } from "sparnatural/src/sparnatural/components/widgets/MapWidget";
-import { NumberConfiguration } from "sparnatural/src/sparnatural/components/widgets/NumberWidget";
-import { TreeConfiguration } from "sparnatural/src/sparnatural/components/widgets/treewidget/TreeWidget";
+import { AutocompleteConfiguration } from "sparnatural";
+import { SparqlHandlerIfc } from "sparnatural";
+import { ListConfiguration } from "sparnatural";
+import { MapConfiguration } from "sparnatural";
+import { NumberConfiguration } from "sparnatural";
+import { TreeConfiguration } from "sparnatural";
 
 interface ISettings {
   localCacheDataTtl?: number;

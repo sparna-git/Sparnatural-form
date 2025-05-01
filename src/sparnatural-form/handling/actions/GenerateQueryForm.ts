@@ -1,7 +1,7 @@
 import ActionStoreForm from "../ActionStore";
 import { Generator } from "sparqljs";
-import { ISparJson } from "sparnatural/src/sparnatural/generators/json/ISparJson";
-import JsonSparqlTranslator from "sparnatural/src/sparnatural/generators/sparql/fromjson/JsonSparqlTranslator";
+import { SparnaturalQueryIfc } from "sparnatural";
+import { JsonSparqlTranslator } from "sparnatural";
 import CleanQuery from "../../components/CleanQuery";
 
 export class QueryGeneratorForm {
@@ -27,7 +27,7 @@ export class QueryGeneratorForm {
     sparnaturalForm.HandleOptional();
 
     // Step 2: Retrieve the last cleaned query
-    let queryToUse: ISparJson = sparnaturalForm.cleanQueryResult;
+    let queryToUse: SparnaturalQueryIfc = sparnaturalForm.cleanQueryResult;
 
     // Step 3: Further clean the query using CleanQuery for final processing
     const cleanQueryProcessor = new CleanQuery(
@@ -77,5 +77,5 @@ export class QueryGeneratorForm {
 
 export class QueryUpdatedPayload {
   queryString: string;
-  queryJson: ISparJson;
+  queryJson: SparnaturalQueryIfc;
 }
