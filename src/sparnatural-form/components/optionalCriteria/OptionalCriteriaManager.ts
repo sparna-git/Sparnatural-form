@@ -4,6 +4,7 @@ import {
   CriteriaLine,
   ISparJson,
 } from "sparnatural/src/sparnatural/generators/json/ISparJson";
+import { I18nForm } from "../../settings/I18nForm";
 
 class OptionalCriteriaManager {
   private initialOptionalStates: { [variable: string]: any } = {};
@@ -141,7 +142,7 @@ class OptionalCriteriaManager {
     this.anyValueToggle.id = `any-value-${this.variable}`;
     this.anyValueToggle.classList.add("any-value-toggle");
     anyValueLabel.htmlFor = `any-value-${this.variable}`;
-    anyValueLabel.innerHTML = "&nbsp;Any value";
+    anyValueLabel.innerHTML = `&nbsp;${I18nForm.labels["AnyValue"]}`;
     this.anydiv.appendChild(this.anyValueToggle);
     this.anydiv.appendChild(anyValueLabel);
     optionContainer.appendChild(this.anydiv);
@@ -152,7 +153,7 @@ class OptionalCriteriaManager {
     this.notExistToggle.id = `not-value-${this.variable}`;
     this.notExistToggle.classList.add("any-value-toggle");
     notExistLabel.htmlFor = `not-value-${this.variable}`;
-    notExistLabel.innerHTML = "&nbsp;Not Exist";
+    notExistLabel.innerHTML = `&nbsp;${I18nForm.labels["NotExist"]}`;
     this.notExistDiv.appendChild(this.notExistToggle);
     this.notExistDiv.appendChild(notExistLabel);
     optionContainer.appendChild(this.notExistDiv);
@@ -179,7 +180,7 @@ class OptionalCriteriaManager {
         // Créer une "pill" pour Any Value
         const pill = document.createElement("div");
         pill.className = "option-pill any-value";
-        pill.textContent = "any value";
+        pill.textContent = `${I18nForm.labels["AnyValue"]}`;
 
         // Bouton de suppression (croix)
         const unselectBtn = document.createElement("span");
@@ -236,7 +237,7 @@ class OptionalCriteriaManager {
         // Créer une "pill" pour Not Exist
         const pill = document.createElement("div");
         pill.className = "option-pill not-exist";
-        pill.textContent = "not exist";
+        pill.textContent = `${I18nForm.labels["NotExist"]}`;
 
         // Bouton de suppression (croix)
         const unselectBtn = document.createElement("span");

@@ -8,9 +8,13 @@ import {
 } from "sparnatural/src/sparnatural/generators/json/ISparJson";
 import ISparnaturalSpecification from "sparnatural/src/sparnatural/spec-providers/ISparnaturalSpecification";
 import OptionalCriteriaManager from "./optionalCriteria/OptionalCriteriaManager";
-import { AbstractWidget } from "sparnatural/src/sparnatural/components/widgets/AbstractWidget";
+import {
+  AbstractWidget,
+  ValueRepetition,
+} from "sparnatural/src/sparnatural/components/widgets/AbstractWidget";
 import { Binding } from "../FormStructure";
 import tippy from "tippy.js";
+import { I18nForm } from "../settings/I18nForm";
 
 class FormField {
   private binding: Binding;
@@ -225,6 +229,30 @@ class FormField {
       console.log("valueToInject", valueToInject);
 
       valueToInject.forEach((val: any) => {
+        const isSingleValue = widget.valueRepetition === ValueRepetition.SINGLE;
+
+        // Si SINGLE et une valeur déjà existante → Afficher warning
+        if (isSingleValue && selectedValues.size > 0) {
+          // Créer un message d'alerte temporaire
+          let warningMsg = formFieldDiv.querySelector(
+            ".single-value-warning"
+          ) as HTMLElement;
+          if (!warningMsg) {
+            warningMsg = document.createElement("div");
+            warningMsg.classList.add("single-value-warning");
+            warningMsg.innerText = I18nForm.labels["messageSingleValue"];
+            warningMsg.style.color = "red";
+            warningMsg.style.fontSize = "13px";
+            formFieldDiv.insertBefore(warningMsg, valueDisplay);
+
+            // Supprimer automatiquement après 5 secondes
+            setTimeout(() => {
+              warningMsg.remove();
+            }, 5000);
+          }
+          return; // Ne pas ajouter la nouvelle valeur
+        }
+
         const existingValue = Array.from(selectedValues).find(
           (existingVal: any) => existingVal.label === val.label
         );
@@ -242,7 +270,6 @@ class FormField {
             })
           );
 
-          // Update options visibility
           if (this.optionalCriteriaManager) {
             this.optionalCriteriaManager.updateOptionVisibility();
           }

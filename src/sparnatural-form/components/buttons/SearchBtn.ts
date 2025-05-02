@@ -1,4 +1,4 @@
-import { I18n } from "sparnatural/src/sparnatural/settings/I18n";
+import { I18nForm } from "../../settings/I18nForm";
 
 class SearchBtn {
   callbackSearch: () => void;
@@ -13,7 +13,7 @@ class SearchBtn {
     if (!callbackExport) {
       this.buttonGroupElement = $(
         `<div class="gui-split-button">
-         <button id="Search" >${I18n.labels["Search"] || "Search"}
+         <button id="Search" >${I18nForm.labels["Search"] || "Search"}
          <span class="spinner" style="display: none;"></span>
          </button>
          </div>`
@@ -21,7 +21,7 @@ class SearchBtn {
     } else {
       this.buttonGroupElement = $(
         `<div class="gui-split-button">
-       <button id="Search" >${I18n.labels["Search"] || "Search"}
+       <button id="Search" >${I18nForm.labels["Search"] || "Search"}
        <span class="spinner" style="display: none;"></span>
        </button>
        <span class="gui-popup-button" aria-haspopup="true" aria-expanded="false" title="Export">
@@ -32,7 +32,7 @@ class SearchBtn {
        <ul class="gui-popup">
          <li>
            <button id="Export">${
-             I18n.labels["Export"] || "Export"
+             I18nForm.labels["Export"] || "Export"
            }<span class="spinner" style="display: none;"></span></button>
          </li>
        </ul>

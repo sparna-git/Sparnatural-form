@@ -30,7 +30,8 @@ class CleanQuery {
   //methods to clean the querytouse
   cleanQueryToUse(resultType: "onscreen" | "export"): ISparJson {
     // deep copy of the initial query
-    let cleanQueryResult: ISparJson = JSON.parse(JSON.stringify(this.query));
+
+    let cleanQueryResult = deepCloneWithDates(this.query);
 
     // remove selected variables if onscreen display
     // we remove variables from the SELECT clause
@@ -170,3 +171,28 @@ class CleanQuery {
   }
 }
 export default CleanQuery;
+
+export function deepCloneWithDates<T>(obj: T): T {
+  const replacer = (_key: string, value: any) => {
+    if (value instanceof Date) {
+      return value.toISOString(); // Convertir Date en String ISO
+    }
+    return value;
+  };
+
+  const reviver = (_key: string, value: any) => {
+    // Si c'est une string ISO standard, essayer de la parser
+    if (
+      typeof value === "string" &&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/.test(value)
+    ) {
+      const parsedDate = new Date(value);
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      }
+    }
+    return value;
+  };
+
+  return JSON.parse(JSON.stringify(obj, replacer), reviver) as T;
+}
