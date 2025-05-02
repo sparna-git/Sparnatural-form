@@ -182,8 +182,13 @@ class FormField {
           console.log(selectedValues);
           updateValueDisplay();
           queryLine.values = Array.from(selectedValues);
-          console.log(true);
           console.log("QUERYLINE ", queryLine);
+
+          // Vide les champs input du widget
+          const inputs = widget.html[0].querySelectorAll("input");
+          inputs.forEach((input) => {
+            (input as HTMLInputElement).value = "";
+          });
           formFieldDiv.dispatchEvent(
             new CustomEvent("valueRemoved", {
               bubbles: true,
