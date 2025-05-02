@@ -13,6 +13,7 @@ import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
 import FormField from "./FormField";
 import { Binding, Form } from "../FormStructure";
+import { I18nForm } from "../settings/I18nForm";
 
 /**
  * the content of all HTML element attributes
@@ -107,6 +108,7 @@ class SparnaturalFormComponent extends HTMLComponent {
   render(): this {
     // Initialisation des labels et du catalogue
     this.#initSparnaturalStaticLabels();
+    this.#initLang();
     this.#initCatalog();
 
     // Chargement des paramètres et génération du formulaire
@@ -277,6 +279,13 @@ class SparnaturalFormComponent extends HTMLComponent {
     ).done(function () {});
   }
 
+  #initLang() {
+    if (this.settings.language === "fr") {
+      I18nForm.init("fr");
+    } else {
+      I18nForm.init("en");
+    }
+  }
   /**
    * Initialize the static labels used to render sparnatural-form
    */

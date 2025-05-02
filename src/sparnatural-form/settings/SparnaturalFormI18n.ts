@@ -1,20 +1,5 @@
 import { Form } from "../FormStructure";
 
-/*export class SparnaturalFormI18n {
-  static i18nLabelsResources: any = {
-    // "en":
-    // "fr":
-  };
-
-  public static labels: any;
-
-  private constructor() {}
-
-  static init(lang: any) {
-    SparnaturalFormI18n.labels = SparnaturalFormI18n.i18nLabelsResources[lang];
-  }
-}
-*/
 export class SparnaturalFormI18n {
   public static labels: Record<string, string> = {};
   public static helpMessages: Record<string, string> = {};
