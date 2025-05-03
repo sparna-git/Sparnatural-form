@@ -50,7 +50,7 @@
   "dependencies": {
     "@chenfengyuan/datepicker": "^1.0.10",
     "querystring-es3": "^0.2.1",
-    "sparnatural": "file:../sparnatural/sparnatural-11.0.0.tgz",
+    "sparnatural": "^11.0.1",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.4",
     "util": "^0.12.5"
