@@ -52,6 +52,7 @@ export class SparnaturalFormAttributes {
     this.language = this.#read(element, "lang");
     this.debug = this.#read(element, "debug", true);
     this.defaultLanguage = this.#read(element, "defaultLang");
+    this.typePredicate = this.#read(element, "typePredicate");
   }
 
   #read(element: HTMLElement, attribute: string, asJson: boolean = false) {
