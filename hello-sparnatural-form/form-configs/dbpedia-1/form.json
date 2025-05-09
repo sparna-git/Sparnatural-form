@@ -21,22 +21,12 @@
       }
     },
     {
-      "variable": "Text_16",
-      "node": {
-        "type": "UserPrompt",
-        "name": {
-          "en": "Search in description",
-          "fr": "Rechercher dans la description"
-        }
-      }
-    },
-    {
       "variable": "Category_4",
       "node": {
         "type": "UserPrompt",
         "name": {
-          "en": "Category (Person)",
-          "fr": "Categorie (Personne)"
+          "en": "Category of author",
+          "fr": "Catégorie de l'auteur"
         }
       }
     },
@@ -45,8 +35,8 @@
       "node": {
         "type": "UserPrompt",
         "name": {
-          "en": "Country (person)",
-          "fr": "Pays (Personne)"
+          "en": "Country of author",
+          "fr": "Pays de l'auteur"
         }
       }
     },
@@ -55,8 +45,18 @@
       "node": {
         "type": "UserPrompt",
         "name": {
-          "en": "Date of birth (Person)",
-          "fr": "Date de naissance (Personne)"
+          "en": "Date of birth of author",
+          "fr": "Date de naissance de l'auteur"
+        }
+      }
+    },
+    {
+      "variable": "Text_16",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Search inside description",
+          "fr": "Rechercher dans la description"
         }
       }
     }
