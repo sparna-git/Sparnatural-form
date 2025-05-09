@@ -27,3 +27,12 @@ Sparnatural-form is meant to be a simple front-end for non-technical users that 
 Watch this 1:00 screencast to see how Sparnatural-form looks like:
 
 [![](docs/images/sparnatural-form-video.png)](https://youtu.be/hNNghuMeoAc?feature=shared)
+
+
+## Getting started
+
+1. Go to the latest release in the [release section](https://github.com/sparna-git/Sparnatural-form/releases)
+2. Download the `hello-sparnatural-form.zip` and unzip it
+3. Look at how the index.html looks like
+4. Go to the [Sparnatural-form section of the documentation portal](https://docs.sparnatural.eu/#sparnatural-form) to understand how this is integrated
+5. The SHACL configuration features are the same as Sparnatural and documented in the [_"How-to configure"_ section of Sparnatural doc](https://docs.sparnatural.eu/how-to-configure-shacl/How-to-configure-Sparnatural-shacl.html)
