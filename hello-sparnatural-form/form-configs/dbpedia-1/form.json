@@ -1,0 +1,64 @@
+{
+  "bindings": [
+    {
+      "variable": "Museum_8",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Museum",
+          "fr": "Musée"
+        }
+      }
+    },
+    {
+      "variable": "Date_14",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Date of creation",
+          "fr": "Date de création"
+        }
+      }
+    },
+    {
+      "variable": "Text_16",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Search in description",
+          "fr": "Rechercher dans la description"
+        }
+      }
+    },
+    {
+      "variable": "Category_4",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Category (Person)",
+          "fr": "Categorie (Personne)"
+        }
+      }
+    },
+    {
+      "variable": "Country_6",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Country (person)",
+          "fr": "Pays (Personne)"
+        }
+      }
+    },
+    {
+      "variable": "Date_10",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Date of birth (Person)",
+          "fr": "Date de naissance (Personne)"
+        }
+      }
+    }
+  ]
+}

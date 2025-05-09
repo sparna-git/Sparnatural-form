@@ -1,0 +1,72 @@
+{
+  "distinct": true,
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "Museum_1"
+    },
+    {
+      "termType": "Variable",
+      "value": "Country_2"
+    },
+    {
+      "termType": "Variable",
+      "value": "Image_4"
+    },
+    {
+      "termType": "Variable",
+      "value": "Text_6"
+    },
+    {
+      "termType": "Variable",
+      "value": "Number_8"
+    }
+  ],
+  "order": null,
+  "branches": [
+    {
+      "line": {
+        "s": "Museum_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_country",
+        "o": "Country_2",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Museum_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_thumbnail",
+        "o": "Image_4",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Museum_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_description",
+        "o": "Text_6",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Text",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Museum_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_numberOfVisitors",
+        "o": "Number_8",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Number",
+        "values": []
+      },
+      "children": []
+    }
+  ]
+}

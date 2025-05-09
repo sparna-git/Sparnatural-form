@@ -1,0 +1,133 @@
+{
+  "distinct": true,
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "Artwork_1"
+    },
+    {
+      "termType": "Variable",
+      "value": "Person_2"
+    },
+    {
+      "termType": "Variable",
+      "value": "Category_4"
+    },
+    {
+      "termType": "Variable",
+      "value": "Country_6"
+    },
+    {
+      "termType": "Variable",
+      "value": "Museum_8"
+    },
+    {
+      "termType": "Variable",
+      "value": "Date_10"
+    },
+    {
+      "termType": "Variable",
+      "value": "Image_12"
+    },
+    {
+      "termType": "Variable",
+      "value": "Date_14"
+    },
+    {
+      "termType": "Variable",
+      "value": "Text_16"
+    }
+  ],
+  "order": null,
+  "branches": [
+    {
+      "line": {
+        "s": "Artwork_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_author",
+        "o": "Person_2",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+        "values": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Person_2",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_classifiedIn",
+            "o": "Category_4",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Category",
+            "values": []
+          },
+          "children": []
+        },
+        {
+          "line": {
+            "s": "Person_2",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_bornIn",
+            "o": "Country_6",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
+            "values": []
+          },
+          "children": []
+        },
+        {
+          "line": {
+            "s": "Person_2",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_birthDate",
+            "o": "Date_10",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
+            "values": []
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "line": {
+        "s": "Artwork_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_displayedAt",
+        "o": "Museum_8",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Artwork_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_thumbnail",
+        "o": "Image_12",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Artwork_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_creationYear",
+        "o": "Date_14",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
+        "values": []
+      },
+      "children": []
+    },
+    {
+      "line": {
+        "s": "Artwork_1",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_description",
+        "o": "Text_16",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Text",
+        "values": []
+      },
+      "children": []
+    }
+  ]
+}

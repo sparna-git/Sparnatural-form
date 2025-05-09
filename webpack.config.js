@@ -6,8 +6,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-const StatoscopeWebpackPlugin = require('@statoscope/webpack-plugin').default;
+const BundleAnalyzerPlugin =
+  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
   entry: {
@@ -23,13 +23,16 @@ module.exports = {
       {
         test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: { loader: "babel-loader" }
+        use: { loader: "babel-loader" },
       },
       {
         test: /\.ts$/,
         use: {
-          loader: "ts-loader"
-        }
+          loader: "ts-loader",
+          options: {
+            allowTsInNodeModules: true,
+          },
+        },
       },
       {
         test: /\.(sass|scss)$/,
@@ -47,18 +50,15 @@ module.exports = {
             loader: "sass-loader", // compiles Sass to CSS
             options: {
               sassOptions: {
-                includePaths: ['node_modules']
-              }
-            }
+                includePaths: ["node_modules"],
+              },
+            },
           },
         ],
       },
       {
         test: /\.css$/,
-        use: [
-            MiniCssExtractPlugin.loader,
-            "css-loader"
-        ],
+        use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
         test: /\.(png|jp(e*)g|svg|gif)$/,
@@ -115,10 +115,9 @@ module.exports = {
           globOptions: {
             ignore: ["**/index.html"], // Assure-toi de ne pas copier ces fichiers déjà générés
           },
-        }
+        },
       ],
     }),
-
 
     new StatoscopeWebpackPlugin(),
 
@@ -131,6 +130,56 @@ module.exports = {
     // see https://stackoverflow.com/questions/68542553/webpack-5process-is-not-defined-triggered-by-stream-browserify
     new webpack.ProvidePlugin({
       process: "process/browser",
+    }),
+    new FileManagerPlugin({
+      events: {
+        onEnd: [
+          {
+            copy: [
+              {
+                source: "./hello-sparnatural-form/**",
+                destination: "./dist/hello-sparnatural-form",
+                options: { overwrite: true },
+              },
+            ],
+          },
+          {
+            copy: [
+              {
+                source: "./dist/sparnatural-form.js",
+                destination: "./dist/hello-sparnatural-form/",
+                options: { overwrite: true },
+              },
+            ],
+          },
+          {
+            copy: [
+              {
+                source: "./dist/sparnatural-form.css",
+                destination: "./dist/hello-sparnatural-form/",
+                options: { overwrite: true },
+              },
+            ],
+          },
+          {
+            archive: [
+              {
+                source: "./dist/hello-sparnatural-form",
+                destination: "./dist/hello-sparnatural-form.zip",
+              },
+            ],
+          },
+          {
+            copy: [
+              {
+                source: "./hello-sparnatural-form/form-configs/**",
+                destination: "./dist/hello-sparnatural-form/form-configs",
+                options: { overwrite: true },
+              },
+            ],
+          },
+        ],
+      },
     }),
   ],
   devServer: {
