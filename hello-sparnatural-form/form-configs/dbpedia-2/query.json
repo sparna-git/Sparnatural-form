@@ -31,7 +31,8 @@
         "o": "Country_2",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
-        "values": []
+        "values": [],
+        "optional": true
       },
       "children": []
     },
@@ -42,7 +43,8 @@
         "o": "Image_4",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
-        "values": []
+        "values": [],
+        "optional": true
       },
       "children": []
     },
@@ -64,7 +66,8 @@
         "o": "Number_8",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Number",
-        "values": []
+        "values": [],
+        "optional": true
       },
       "children": []
     }
