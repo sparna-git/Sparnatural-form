@@ -6,8 +6,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const DashboardPlugin = require("webpack-dashboard/plugin");
 const CopyPlugin = require("copy-webpack-plugin");
 const FileManagerPlugin = require("filemanager-webpack-plugin");
-const BundleAnalyzerPlugin =
-  require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
 module.exports = {
   entry: {
@@ -119,7 +117,8 @@ module.exports = {
       ],
     }),
 
-    new StatoscopeWebpackPlugin(),
+    // uncomment to analyze the package size
+    // new StatoscopeWebpackPlugin(),
 
     // so that JQuery is automatically inserted
     new webpack.ProvidePlugin({
@@ -170,13 +169,7 @@ module.exports = {
             ],
           },
           {
-            copy: [
-              {
-                source: "./hello-sparnatural-form/form-configs/**",
-                destination: "./dist/hello-sparnatural-form/form-configs",
-                options: { overwrite: true },
-              },
-            ],
+            delete: ["./dist/hello-sparnatural-form"]
           },
         ],
       },
