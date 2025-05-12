@@ -1,4 +1,3 @@
-
 export {};
 declare global {
   // Custom type definitions for the jquery.nice-select plugin

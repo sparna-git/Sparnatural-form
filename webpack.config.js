@@ -9,10 +9,13 @@ const FileManagerPlugin = require("filemanager-webpack-plugin");
 
 module.exports = {
   entry: {
-    "sparnatural-form": "./src/SparnaturalFormElement.ts",
+    "sparnatural-form": [
+      "./src/SparnaturalFormElement.ts",
+      "./scss/sparnatural-form.scss",
+    ],
   },
   output: {
-    path: path.resolve(__dirname, "./dist"),
+    path: path.resolve(__dirname, "./dist/browser"),
     filename: "[name].js",
     clean: true,
   },
@@ -145,7 +148,7 @@ module.exports = {
           {
             copy: [
               {
-                source: "./dist/sparnatural-form.js",
+                source: "./dist/browser/sparnatural-form.js",
                 destination: "./dist/hello-sparnatural-form/",
                 options: { overwrite: true },
               },
@@ -154,7 +157,7 @@ module.exports = {
           {
             copy: [
               {
-                source: "./dist/sparnatural-form.css",
+                source: "./dist/browser/sparnatural-form.css",
                 destination: "./dist/hello-sparnatural-form/",
                 options: { overwrite: true },
               },
@@ -169,7 +172,7 @@ module.exports = {
             ],
           },
           {
-            delete: ["./dist/hello-sparnatural-form"]
+            delete: ["./dist/hello-sparnatural-form"],
           },
         ],
       },

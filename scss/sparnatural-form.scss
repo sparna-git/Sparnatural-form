@@ -1,5 +1,5 @@
 // Importing all the components
-@use "./components/all-components-sparnatural-form.scss";
+@use "./components/_all-components-sparnatural-form.scss";
 // we need to import that CSS explicitly so that for mcan work without importing it in the HTML page
 @import "~@chenfengyuan/datepicker/dist/datepicker.min.css";
 // we are importing one default theme,
