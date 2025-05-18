@@ -1,17 +1,15 @@
 {
-    "compilerOptions": {
-      "sourceMap": true,
-      "outDir": "./dist/",
-      "noImplicitAny": true,
-      "module": "es2022",
-      "target": "es2021",
-      "allowJs": true,
-      "moduleResolution": "node",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports":true,
-      "declaration": false
-    },
-    "include": [
-      "src/**/*.ts",
-    ]
-  }
+  "compilerOptions": {
+    "sourceMap": true,
+    "outDir": "./dist/",
+    "noImplicitAny": true,
+    "module": "es2022",
+    "target": "es2021",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": false
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,7 +1,7 @@
 export class I18nForm {
   static i18nLabelsResources: any = {
-    en: require("../../assets/lang/en.json"),
-    fr: require("../../assets/lang/fr.json"),
+    en: require("../lang/en.json"),
+    fr: require("../lang/fr.json"),
   };
 
   public static labels: any;
