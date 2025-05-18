@@ -1,0 +1,136 @@
+{
+  "distinct": true,
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "Artwork"
+    },
+    {
+      "termType": "Variable",
+      "value": "Person"
+    },
+    {
+      "termType": "Variable",
+      "value": "Country"
+    },
+    {
+      "termType": "Variable",
+      "value": "Museum"
+    },
+    {
+      "termType": "Variable",
+      "value": "DateOfBirth"
+    },
+    {
+      "termType": "Variable",
+      "value": "Thumbnail"
+    },
+    {
+      "termType": "Variable",
+      "value": "DateCreation"
+    },
+    {
+      "termType": "Variable",
+      "value": "Description"
+    }
+  ],
+  "order": null,
+  "branches": [
+    {
+      "line": {
+        "s": "Artwork",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_author",
+        "o": "Person",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+        "values": [],
+        "optional": true
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Person",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_classifiedIn",
+            "o": "Category_4",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Category",
+            "values": []
+          },
+          "children": [],
+          "optional": true
+        },
+        {
+          "line": {
+            "s": "Person",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_bornIn",
+            "o": "Country",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
+            "values": []
+          },
+          "children": [],
+          "optional": true
+        },
+        {
+          "line": {
+            "s": "Person",
+            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Person_birthDate",
+            "o": "DateOfBirth",
+            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
+            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
+            "values": []
+          },
+          "children": [],
+          "optional": true
+        }
+      ]
+    },
+    {
+      "line": {
+        "s": "Artwork",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_displayedAt",
+        "o": "Museum",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
+        "values": []
+      },
+      "children": [],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Artwork",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_thumbnail",
+        "o": "Thumbnail",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
+        "values": []
+      },
+      "children": [],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Artwork",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_creationYear",
+        "o": "DateCreation",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
+        "values": []
+      },
+      "children": [],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Artwork",
+        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_description",
+        "o": "Description",
+        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
+        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Text",
+        "values": []
+      },
+      "children": []
+    }
+  ]
+}

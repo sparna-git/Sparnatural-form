@@ -1,0 +1,34 @@
+{
+  "bindings": [
+    {
+      "variable": "Country_2",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Country",
+          "fr": "Pays"
+        }
+      }
+    },
+    {
+      "variable": "Number_8",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Number of visitors",
+          "fr": "Nombre de visiteurs"
+        }
+      }
+    },
+    {
+      "variable": "Text_6",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Search in description",
+          "fr": "Rechercher dans la description"
+        }
+      }
+    }
+  ]
+}

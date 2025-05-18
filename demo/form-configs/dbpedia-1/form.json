@@ -1,0 +1,64 @@
+{
+  "bindings": [
+    {
+      "variable": "Museum",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Museum",
+          "fr": "Musée"
+        }
+      }
+    },
+    {
+      "variable": "DateCreation",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Date of creation",
+          "fr": "Date de création"
+        }
+      }
+    },
+    {
+      "variable": "Category_4",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Category of author",
+          "fr": "Catégorie de l'auteur"
+        }
+      }
+    },
+    {
+      "variable": "Country",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Country of author",
+          "fr": "Pays de l'auteur"
+        }
+      }
+    },
+    {
+      "variable": "DateOfBirth",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Date of birth of author",
+          "fr": "Date de naissance de l'auteur"
+        }
+      }
+    },
+    {
+      "variable": "Description",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Search inside description",
+          "fr": "Rechercher dans la description"
+        }
+      }
+    }
+  ]
+}
