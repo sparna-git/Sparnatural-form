@@ -28,18 +28,19 @@ export class QueryGeneratorForm {
 
     // Step 2: Retrieve the last cleaned query
     let queryToUse: SparnaturalQueryIfc = sparnaturalForm.cleanQueryResult;
-
+    // Step 4: Translate the final clean query into SPARQL
+    const settings = sparnaturalForm.settings;
+    console.log("settings for SPARQL generation:", settings);
     // Step 3: Further clean the query using CleanQuery for final processing
     const cleanQueryProcessor = new CleanQuery(
       queryToUse,
-      sparnaturalForm.formConfig
+      sparnaturalForm.formConfig,
+      settings
     );
     const finalCleanQuery = cleanQueryProcessor.cleanQueryToUse(resultType);
 
     //console.log("Final Clean Query for SPARQL generation:", finalCleanQuery);
 
-    // Step 4: Translate the final clean query into SPARQL
-    const settings = sparnaturalForm.settings;
     const sparqlTranslator = new JsonSparqlTranslator(
       this.actionStoreForm.specProvider,
       settings

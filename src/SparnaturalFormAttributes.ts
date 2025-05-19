@@ -9,7 +9,7 @@ export class SparnaturalFormAttributes {
   query: string;
   form: string;
   endpoints?: string[];
-  limit: number;
+  limit?: number;
   language: string;
   defaultLanguage: string;
   debug: boolean;

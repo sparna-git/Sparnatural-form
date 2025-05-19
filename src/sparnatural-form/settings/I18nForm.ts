@@ -1,7 +1,10 @@
+import enLabels from "../lang/en.json";
+import frLabels from "../lang/fr.json";
+
 export class I18nForm {
   static i18nLabelsResources: any = {
-    en: require("../lang/en.json"),
-    fr: require("../lang/fr.json"),
+    en: enLabels,
+    fr: frLabels,
   };
 
   public static labels: any;

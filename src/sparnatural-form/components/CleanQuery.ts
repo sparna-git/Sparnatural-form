@@ -1,7 +1,4 @@
-import {
-  Branch,
-  SparnaturalQueryIfc,
-} from "sparnatural";
+import { Branch, SparnaturalQueryIfc } from "sparnatural";
 import { Binding, Form } from "../FormStructure";
 
 /**
@@ -16,10 +13,12 @@ class CleanQuery {
   // Thomas : this is not used anymore (05/02/2025)
   private variablesUsedInFormConfig: string[];
   private formConfig: Form;
+  private settings: any;
 
-  constructor(query: SparnaturalQueryIfc, formConfig: Form) {
+  constructor(query: SparnaturalQueryIfc, formConfig: Form, settings: any) {
     this.query = query;
     this.formConfig = formConfig;
+    this.settings = settings;
   }
 
   // Obtenir les form variables à partir de formConfig
@@ -60,6 +59,10 @@ class CleanQuery {
     // } else {
     //cleanQueryResult = this.query;
     //}
+    // Add the limit from settings to the cleaned query
+    if (this.settings && this.settings.limit !== undefined) {
+      cleanQueryResult.limit = this.settings.limit;
+    }
     console.log("CleanQuery: Query cleaned:", cleanQueryResult);
     return cleanQueryResult;
   }
