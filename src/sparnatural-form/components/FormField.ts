@@ -138,10 +138,8 @@ class FormField {
 
     const specEntity = this.specProvider.getEntity(subject);
     const connectingProperty = this.specProvider.getProperty(predicate);
-    const propertyType = connectingProperty.getPropertyType(object);
 
     const widget = this.widgetFactory.buildWidget(
-      propertyType,
       { variable: queryLine.s, type: specEntity.getId() },
       { variable: "predicate", type: connectingProperty.getId() },
       { variable: queryLine.o, type: object }
