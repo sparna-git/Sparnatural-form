@@ -1,5 +1,5 @@
 import { AutocompleteConfiguration } from "sparnatural";
-import { SparqlHandlerIfc } from "sparnatural";
+import { SparqlHandlerIfc } from "rdf-shacl-commons";
 import { ListConfiguration } from "sparnatural";
 import { MapConfiguration } from "sparnatural";
 import { NumberConfiguration } from "sparnatural";

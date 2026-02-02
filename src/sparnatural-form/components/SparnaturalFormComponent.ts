@@ -1,14 +1,15 @@
-import { I18n, SparnaturalSpecificationFactory, WidgetFactory } from "sparnatural";
-import { HTMLComponent } from "sparnatural";
 import {
-  Branch,
-  SparnaturalQueryIfc,
+  I18n,
+  SparnaturalSpecificationFactory,
+  WidgetFactory,
 } from "sparnatural";
+import { HTMLComponent } from "sparnatural";
+import { SparnaturalQuery, PredicateObjectPair } from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import ISettings from "../settings/ISettings";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import ActionStoreForm from "../handling/ActionStore"; // Importer le store
-import { Catalog } from "sparnatural";
+import { Catalog } from "rdf-shacl-commons";
 import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
 import FormField from "./FormField";
@@ -27,9 +28,9 @@ class SparnaturalFormComponent extends HTMLComponent {
   specProvider: ISparnaturalSpecification;
 
   // The JSON query from the "query" attribute
-  jsonQuery: SparnaturalQueryIfc;
+  jsonQuery: SparnaturalQuery;
 
-  cleanQueryResult: SparnaturalQueryIfc | null; // Ajout pour stocker la clean query
+  cleanQueryResult: SparnaturalQuery | null; // Ajout pour stocker la clean query
 
   actionStoreForm: ActionStoreForm; // Ajouter une référence à l'ActionStoreForm
 
@@ -45,62 +46,46 @@ class SparnaturalFormComponent extends HTMLComponent {
   }
 
   //methode to handle the optional branches of the query and return the adjusted query
-  public HandleOptional(): SparnaturalQueryIfc | null {
-    //verify if the query is initialized
-    if (!this.jsonQuery || !this.jsonQuery.branches) {
-      console.error(
-        "jsonQuery is not initialized or does not contain branches."
-      );
-      return null;
+  public HandleOptional(): SparnaturalQuery | null {
+    if (!this.jsonQuery?.where) return null;
+
+    const copiedQuery = structuredClone(this.jsonQuery);
+
+    if (copiedQuery.where.subType === "bgpSameSubject") {
+      this.adjustOptionalPairs(copiedQuery.where.predicateObjectPairs);
     }
 
-    //copy the query to avoid modifying the original query
-    const copiedQuery = JSON.parse(JSON.stringify(this.jsonQuery));
-
-    if (!this.formConfig) {
-      return null;
-    }
-    this.formConfig = this.formConfig; // Store the form configuration here
-    // Get the form variables and query variables
-    const formVariables = this.formConfig.bindings.map(
-      (binding: Binding) => binding.variable
-    );
-
-    // Adjust optional flags for all branches without removing them
-    this.adjustOptionalFlags(copiedQuery.branches);
-
-    /*console.log(
-      "Adjusted query without branch removal:",
-      JSON.stringify(copiedQuery, null, 2)
-    );*/
-    this.cleanQueryResult = copiedQuery; // update the global cleanQuery attribute
-    return copiedQuery; // return the adjusted query
+    this.cleanQueryResult = copiedQuery;
+    return copiedQuery;
   }
 
   //methode qui ajuste les branches optionnelles
-  private adjustOptionalFlags(
-    branches: Branch[],
-    parentOptional: boolean = false
+  private adjustOptionalPairs(
+    pairs: PredicateObjectPair[],
+    parentOptional = false,
   ) {
-    branches.forEach((branch: Branch) => {
-      const formVariable = branch.line.o;
-      const hasValues = branch.line.values && branch.line.values.length > 0;
-      // Remove the optional flag if the branch has values
-      if (
-        hasValues ||
-        branch.children.some(
-          (child: Branch) => child.line.values && child.line.values.length > 0
-        )
-      ) {
-        branch.optional = false;
+    pairs.forEach((pair) => {
+      const object = pair.object;
+
+      const hasValues = object.values && object.values.length > 0;
+
+      const hasFilters = object.filters && object.filters.length > 0;
+
+      const hasChildValues = object.predicateObjectPairs?.some(
+        (child) => child.object.values?.length || child.object.filters?.length,
+      );
+
+      if (hasValues || hasFilters || hasChildValues) {
+        delete pair.subType;
       } else {
-        // If no values and not in form/query, propagate the optional flag from the parent
-        branch.optional = branch.optional || parentOptional;
+        pair.subType = parentOptional ? "optional" : pair.subType;
       }
 
-      // Recursively adjust the optional flags for child branches
-      if (branch.children && branch.children.length > 0) {
-        this.adjustOptionalFlags(branch.children, branch.optional);
+      if (object.predicateObjectPairs) {
+        this.adjustOptionalPairs(
+          object.predicateObjectPairs,
+          pair.subType === "optional",
+        );
       }
     });
   }
@@ -115,7 +100,7 @@ class SparnaturalFormComponent extends HTMLComponent {
     this.initSpecificationProvider((sp: ISparnaturalSpecification) => {
       this.specProvider = sp;
 
-      this.initJsonQuery((query: SparnaturalQueryIfc) => {
+      this.initJsonQuery((query: SparnaturalQuery) => {
         this.jsonQuery = query;
         this.actionStoreForm = new ActionStoreForm(this, this.specProvider);
 
@@ -139,7 +124,7 @@ class SparnaturalFormComponent extends HTMLComponent {
               this.html[0],
               this.specProvider,
               this.jsonQuery,
-              new WidgetFactory(this, this.specProvider, this.settings, null)
+              new WidgetFactory(this, this.specProvider, this.settings, null),
             );
             fieldGenerator.generateField();
           });
@@ -154,7 +139,7 @@ class SparnaturalFormComponent extends HTMLComponent {
             this.SubmitSection = new SubmitSection(
               this,
               $(submitBtn),
-              this.settings
+              this.settings,
             );
 
             this.SubmitSection.render();
@@ -167,7 +152,7 @@ class SparnaturalFormComponent extends HTMLComponent {
               detail: {
                 sparnaturalForm: this,
               },
-            })
+            }),
           );
         }).fail((error) => {
           console.error("Error loading form configuration:", error);
@@ -202,30 +187,57 @@ class SparnaturalFormComponent extends HTMLComponent {
     }
   }
 
-  //methode to reset the form
+  private resetPredicateObjectPairs(pairs: PredicateObjectPair[]) {
+    pairs.forEach((pair) => {
+      const object = pair.object;
+
+      // Reset VALUES (ex VALUES clause)
+      if (object.values) {
+        object.values = [];
+      }
+
+      // Reset FILTERS (date, map, number, search)
+      if (object.filters) {
+        object.filters = [];
+      }
+
+      // Reset nested predicate-object pairs (recursion)
+      if (object.predicateObjectPairs) {
+        this.resetPredicateObjectPairs(object.predicateObjectPairs);
+      }
+    });
+  }
 
   resetForm() {
     console.log("Resetting the entire form...");
 
-    // Effacer tous les éléments enfants du formulaire pour le vider
+    // Clear HTML form
     while (this.html[0].firstChild) {
       this.html[0].removeChild(this.html[0].firstChild);
     }
 
-    // Réinitialiser la requête JSON pour supprimer toutes les valeurs sélectionnées
-    this.jsonQuery.branches.forEach((branch: Branch) => {
-      branch.line.values = []; // Vider toutes les valeurs
-    });
+    // Reset query values & filters
+    if (
+      this.jsonQuery.where &&
+      this.jsonQuery.where.subType === "bgpSameSubject"
+    ) {
+      this.resetPredicateObjectPairs(this.jsonQuery.where.predicateObjectPairs);
+    }
 
-    // Ajouter un événement pour vider l'éditeur SPARQL
+    // Notify SPARQL editor
     const resetEditorEvent = new CustomEvent("resetEditor", {
       bubbles: true,
-      detail: { queryString: "", queryJson: this.jsonQuery },
+      detail: {
+        queryString: "",
+        queryJson: this.jsonQuery,
+      },
     });
+
     this.html[0].dispatchEvent(resetEditorEvent);
 
-    // Recréer le formulaire en appelant la méthode `render`
+    // Re-render form
     this.render();
+
     console.log("Form reset and re-rendered successfully.");
   }
 
@@ -243,7 +255,7 @@ class SparnaturalFormComponent extends HTMLComponent {
       (sp: ISparnaturalSpecification) => {
         // call the call back when done
         callback(sp);
-      }
+      },
     );
   }
 
@@ -255,7 +267,7 @@ class SparnaturalFormComponent extends HTMLComponent {
         me.catalog = new Catalog(data);
       }).fail(function (response) {
         console.error(
-          "Sparnatural - unable to load catalog file : " + settings.catalog
+          "Sparnatural - unable to load catalog file : " + settings.catalog,
         );
       });
     }
@@ -265,17 +277,17 @@ class SparnaturalFormComponent extends HTMLComponent {
    * Reads the Sparnatural query
    * @param callback
    */
-  initJsonQuery(callback: (query: SparnaturalQueryIfc) => void) {
+  initJsonQuery(callback: (query: SparnaturalQuery) => void) {
     let queryUrl = this.settings.query;
 
     $.when(
       $.getJSON(queryUrl, function (data) {
-        callback(data as SparnaturalQueryIfc);
+        callback(data as SparnaturalQuery);
       }).fail(function (response) {
         console.error(
-          "Sparnatural - unable to load JSON query file : " + queryUrl
+          "Sparnatural - unable to load JSON query file : " + queryUrl,
         );
-      })
+      }),
     ).done(function () {});
   }
 

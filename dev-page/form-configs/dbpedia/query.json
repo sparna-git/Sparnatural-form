@@ -1,92 +1,156 @@
 {
-  "distinct": true,
+  "type": "query",
+  "subType": "SELECT",
   "variables": [
     {
-      "termType": "Variable",
+      "type": "term",
+      "subType": "variable",
       "value": "Artwork_1"
     },
     {
-      "termType": "Variable",
+      "type": "term",
+      "subType": "variable",
       "value": "Image_8"
     },
     {
-      "termType": "Variable",
+      "type": "term",
+      "subType": "variable",
       "value": "Text_10"
     }
   ],
-  "order": null,
-  "branches": [
-    {
-      "line": {
-        "s": "Artwork_1",
-        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_displayedAt",
-        "o": "Museum_2",
-        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
-        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
-        "values": []
-      },
-      "children": [
-        {
-          "line": {
-            "s": "Museum_2",
-            "p": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_country",
-            "o": "Country_4",
-            "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
-            "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
-            "values": []
-          },
-          "children": [],
-          "optional": true
-        }
-      ],
-      "optional": true
-    },
-    {
-      "line": {
-        "s": "Artwork_1",
-        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_author",
-        "o": "Person_10",
-        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
-        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
-        "values": []
-      },
-      "children": [],
-      "optional": true
-    },
-    {
-      "line": {
-        "s": "Artwork_1",
-        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_thumbnail",
-        "o": "Image_8",
-        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
-        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
-        "values": []
-      },
-      "children": [],
-      "optional": true
-    },
-    {
-      "line": {
-        "s": "Artwork_1",
-        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_description",
-        "o": "Text_10",
-        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
-        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Text",
-        "values": []
-      },
-      "children": [],
-      "optional": true
-    },
-    {
-      "line": {
-        "s": "Artwork_1",
-        "p": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_creationYear",
-        "o": "Date_12",
-        "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
-        "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
-        "values": []
-      },
-      "children": []
+  "distinct": true,
+  "solutionModifiers": {
+    "limitOffset": {
+      "type": "solutionModifier",
+      "subType": "limitOffset",
+      "limit": 1000
     }
-  ]
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "bgpSameSubject",
+    "subject": {
+      "type": "term",
+      "subType": "variable",
+      "value": "Artwork_1",
+      "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork"
+    },
+    "predicateObjectPairs": [
+      {
+        "type": "predicateObjectPair",
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_displayedAt"
+        },
+        "object": {
+          "type": "objectCriteria",
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "Museum_2",
+            "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum"
+          },
+          "filters": [],
+          "predicateObjectPairs": [
+            {
+              "type": "predicateObjectPair",
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "https://data.mydomain.com/ontologies/sparnatural-config/Museum_country"
+              },
+              "object": {
+                "type": "objectCriteria",
+                "variable": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "Country_4",
+                  "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Country"
+                },
+                "filters": []
+              },
+              "subType": "optional"
+            }
+          ]
+        },
+        "subType": "optional"
+      },
+      {
+        "type": "predicateObjectPair",
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_author"
+        },
+        "object": {
+          "type": "objectCriteria",
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "Person_10",
+            "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Person"
+          },
+          "filters": []
+        },
+        "subType": "optional"
+      },
+      {
+        "type": "predicateObjectPair",
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_thumbnail"
+        },
+        "object": {
+          "type": "objectCriteria",
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "Image_8",
+            "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Image"
+          },
+          "filters": []
+        },
+        "subType": "optional"
+      },
+      {
+        "type": "predicateObjectPair",
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_description"
+        },
+        "object": {
+          "type": "objectCriteria",
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "Text_10",
+            "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Text"
+          },
+          "filters": []
+        },
+        "subType": "optional"
+      },
+      {
+        "type": "predicateObjectPair",
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork_creationYear"
+        },
+        "object": {
+          "type": "objectCriteria",
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "Date_12",
+            "rdfType": "https://data.mydomain.com/ontologies/sparnatural-config/Date"
+          },
+          "filters": []
+        }
+      }
+    ]
+  }
 }

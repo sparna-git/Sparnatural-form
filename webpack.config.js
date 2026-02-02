@@ -84,6 +84,8 @@ module.exports = {
       stream: require.resolve("stream-browserify"),
       querystring: require.resolve("querystring-es3"),
       url: require.resolve("url/"),
+      crypto: require.resolve("crypto-browserify"),
+      vm: require.resolve("vm-browserify"),
     },
     extensions: [".tsx", ".ts", ".js"],
   },

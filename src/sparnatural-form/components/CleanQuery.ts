@@ -1,21 +1,21 @@
-import { Branch, SparnaturalQueryIfc } from "sparnatural";
+import { SparnaturalQuery, PredicateObjectPair } from "sparnatural";
 import { Binding, Form } from "../FormStructure";
 
 /**
  * @param query : the query to clean
- * from query to use remove the branchs with o that exist on the form varibales
- * the condition is that the o haven't any values, not exist in query.variables and it's optional or his father is optional
+ * from query to use remove the pairs with object.variable that exist on the form variables
+ * the condition is that the object haven't any values/filters, not exist in query.variables and it's optional or his father is optional
  * @returns the cleaned query
  */
 
 class CleanQuery {
-  private query: SparnaturalQueryIfc;
+  private query: SparnaturalQuery;
   // Thomas : this is not used anymore (05/02/2025)
   private variablesUsedInFormConfig: string[];
   private formConfig: Form;
   private settings: any;
 
-  constructor(query: SparnaturalQueryIfc, formConfig: Form, settings: any) {
+  constructor(query: SparnaturalQuery, formConfig: Form, settings: any) {
     this.query = query;
     this.formConfig = formConfig;
     this.settings = settings;
@@ -27,7 +27,7 @@ class CleanQuery {
   }
 
   //methods to clean the querytouse
-  cleanQueryToUse(resultType: "onscreen" | "export"): SparnaturalQueryIfc {
+  cleanQueryToUse(resultType: "onscreen" | "export"): SparnaturalQuery {
     // deep copy of the initial query
 
     let cleanQueryResult = deepCloneWithDates(this.query);
@@ -39,7 +39,7 @@ class CleanQuery {
     cleanQueryResult = this.removeUnusedVariablesFromSelect(
       cleanQueryResult,
       resultType,
-      this.formConfig
+      this.formConfig,
     );
     console.log("Type", resultType);
 
@@ -50,41 +50,50 @@ class CleanQuery {
     let variablesUsedInResultSet: string[] =
       this.getVariablesUsedInResultSet(cleanQueryResult);
 
-    // clean the branches (= the WHERE clause)
-
-    cleanQueryResult.branches = this.cleanBranches(
-      cleanQueryResult.branches,
-      variablesUsedInResultSet
-    );
+    // clean the predicateObjectPairs (= the WHERE clause)
+    if (cleanQueryResult.where?.predicateObjectPairs) {
+      cleanQueryResult.where.predicateObjectPairs =
+        this.cleanPredicateObjectPairs(
+          cleanQueryResult.where.predicateObjectPairs,
+          variablesUsedInResultSet,
+        );
+    }
     // } else {
     //cleanQueryResult = this.query;
     //}
     // Add the limit from settings to the cleaned query
     if (this.settings && this.settings.limit !== undefined) {
-      cleanQueryResult.limit = this.settings.limit;
+      if (!cleanQueryResult.solutionModifiers) {
+        cleanQueryResult.solutionModifiers = {};
+      }
+      cleanQueryResult.solutionModifiers.limitOffset = {
+        type: "solutionModifier",
+        subType: "limitOffset",
+        limit: this.settings.limit,
+      } as any;
     }
     console.log("CleanQuery: Query cleaned:", cleanQueryResult);
     return cleanQueryResult;
   }
 
-  private cleanBranches(
-    branches: Branch[],
-    variablesUsedInResultSet: string[]
-  ): Branch[] {
-    return branches
-      .filter((branch) => {
-        const variable = branch.line?.o;
-        const hasValues = branch.line?.values?.length > 0;
-        const isOptional = branch.optional || false;
-        const parentOptional = this.isParentOptional(branch.line?.o);
+  private cleanPredicateObjectPairs(
+    pairs: PredicateObjectPair[],
+    variablesUsedInResultSet: string[],
+  ): PredicateObjectPair[] {
+    return pairs
+      .filter((pair) => {
+        const variable = pair.object?.variable?.value;
+        const hasValues =
+          pair.object?.values?.length > 0 || pair.object?.filters?.length > 0;
+        const isOptional = pair.subType === "optional";
+        const parentOptional = this.isParentOptional(variable);
 
         // Vérifier si la variable existe dans `queryVariables`
-        // const existsInQueryVariables = variablesUsedInResultSet.includes(variable);
         const existsInQueryVariables =
           variablesUsedInResultSet.find((v) => v === variable) !== undefined;
 
-        // remove the branches with o :
-        //   - which haven't any values
+        // remove the pairs with object.variable :
+        //   - which haven't any values/filters
         //   - don't exist in query.variables
         //   - is optional or his father is optional
         //
@@ -95,55 +104,68 @@ class CleanQuery {
         //   - but then it is removed for onscreen display
         //   - so we should remove it anyway
         const shouldRemove =
-          // this.variablesUsedInFormConfig.includes(variable) && // La variable est dans les form variables
           !existsInQueryVariables && // La variable n'existe pas dans les variables du SELECT la requête
-          !hasValues && // Aucune valeur pour cette branche
-          (isOptional || parentOptional); // La branche ou son parent est optionnel
+          !hasValues && // Aucune valeur/filtre pour ce pair
+          (isOptional || parentOptional); // Le pair ou son parent est optionnel
         return !shouldRemove;
       })
-      .map((branch) => ({
-        ...branch,
-        children: this.cleanBranches(
-          branch.children || [],
-          variablesUsedInResultSet
-        ), // Nettoyer récursivement les enfants
+      .map((pair) => ({
+        ...pair,
+        object: {
+          ...pair.object,
+          predicateObjectPairs: pair.object?.predicateObjectPairs
+            ? this.cleanPredicateObjectPairs(
+                pair.object.predicateObjectPairs,
+                variablesUsedInResultSet,
+              )
+            : undefined,
+        },
       }));
   }
 
   /**
    * @return the array of all queries that are used in the query result, either directly or as aggregated variables
    */
-  private getVariablesUsedInResultSet(theQuery: SparnaturalQueryIfc): string[] {
+  private getVariablesUsedInResultSet(theQuery: SparnaturalQuery): string[] {
     if (!theQuery.variables) return [];
     else {
       return Array.isArray(theQuery.variables)
         ? // either this is a simple variable, or this is an aggregated variable
-          theQuery.variables.map((v) =>
-            "value" in v ? v.value : v.expression.expression.value
+          theQuery.variables.map((v: any) =>
+            "value" in v ? v.value : v.expression?.expression?.value,
           )
         : [];
     }
   }
 
-  // Vérifier si le parent d'une branche est optionnel
+  // Vérifier si le parent d'un pair est optionnel
   private isParentOptional(childVariable: string): boolean {
-    const findParent = (branches: Branch[], target: string): Branch => {
-      for (const branch of branches) {
+    const findParent = (
+      pairs: PredicateObjectPair[],
+      target: string,
+    ): PredicateObjectPair | null => {
+      for (const pair of pairs) {
         if (
-          branch.children?.some((child: Branch) => child.line?.o === target)
+          pair.object?.predicateObjectPairs?.some(
+            (child: PredicateObjectPair) =>
+              child.object?.variable?.value === target,
+          )
         ) {
-          return branch;
+          return pair;
         }
-        if (branch.children) {
-          const result = findParent(branch.children, target);
+        if (pair.object?.predicateObjectPairs) {
+          const result = findParent(pair.object.predicateObjectPairs, target);
           if (result) return result;
         }
       }
       return null;
     };
 
-    const parent = findParent(this.query.branches, childVariable);
-    return parent?.optional || false;
+    const parent = findParent(
+      this.query.where?.predicateObjectPairs || [],
+      childVariable,
+    );
+    return parent?.subType === "optional" || false;
   }
 
   /**
@@ -153,15 +175,15 @@ class CleanQuery {
    * @returns
    */
   private removeUnusedVariablesFromSelect(
-    query: SparnaturalQueryIfc,
+    query: SparnaturalQuery,
     resultType: "onscreen" | "export",
-    formConfig: Form
-  ): SparnaturalQueryIfc {
+    formConfig: Form,
+  ): SparnaturalQuery {
     if (resultType == "onscreen") {
-      query.variables = query.variables.filter((v) => {
+      query.variables = query.variables.filter((v: any) => {
         // retain only the columns that are useful for an onscreen display
         // the list of columns for onscreen display is a section in the form config
-        let varName = "value" in v ? v.value : v.expression.expression.value;
+        let varName = "value" in v ? v.value : v.expression?.expression?.value;
         return (
           !formConfig.variables?.onscreen ||
           formConfig.variables?.onscreen?.includes(varName)

@@ -1,16 +1,16 @@
 import { AbstractWidget } from "sparnatural";
 import {
-  Branch,
-  CriteriaLine,
-  SparnaturalQueryIfc,
-} from "sparnatural";  
+  SparnaturalQuery,
+  PredicateObjectPair,
+  ObjectCriteria,
+  labelledCriteriaToFlatValues,
+  labelledCriteriaToFilters,
+} from "sparnatural";
 import { I18nForm } from "../../settings/I18nForm";
-  
-
 
 class OptionalCriteriaManager {
   private initialOptionalStates: { [variable: string]: any } = {};
-  private queryLine: CriteriaLine;
+  private objectCriteria: ObjectCriteria;
 
   // Store references to elements for reuse
   private anyValueToggle!: HTMLInputElement;
@@ -19,58 +19,65 @@ class OptionalCriteriaManager {
   private notExistDiv!: HTMLDivElement;
 
   constructor(
-    private query: SparnaturalQueryIfc, // The entire query structure
+    private query: SparnaturalQuery, // The entire query structure
     private variable: string, // The variable associated with this field
-    queryline: CriteriaLine, // The specific query line for this field
+    objectCriteria: ObjectCriteria, // The specific object criteria for this field (v13)
     private widget: AbstractWidget, // The widget associated with this field
-    private formFieldDiv: HTMLElement // The container for the form field
+    private formFieldDiv: HTMLElement, // The container for the form field
   ) {
-    this.queryLine = queryline;
-    this.saveInitialOptionalState(this.query.branches); // Save initial states for optional flags
+    this.objectCriteria = objectCriteria;
+    this.saveInitialOptionalState(this.query.where.predicateObjectPairs); // Save initial states for optional flags
     this.createOptionContainer(); // Create the UI for "Any value" and "Not Exist" options
-    this.attachValueChangeListener(); // Attach listener for dynamic updates
   }
+
   /**
-   * Saves the initial state of optional and notExist flags for each branch.
+   * Saves the initial state of optional and notExist flags for each pair.
    */
   private saveInitialOptionalState(
-    queryBranches: Branch[],
-    parentOptionalChain: boolean[] = []
+    pairs: PredicateObjectPair[],
+    parentOptionalChain: boolean[] = [],
   ) {
-    const saveState = (branches: Branch[], currentParentChain: boolean[]) => {
-      branches.forEach((branch: Branch) => {
-        const branchVariable = branch.line?.o;
-        const currentChain = [...currentParentChain, branch.optional || false];
+    const saveState = (
+      pairList: PredicateObjectPair[],
+      currentParentChain: boolean[],
+    ) => {
+      pairList.forEach((pair: PredicateObjectPair) => {
+        const pairVariable = pair.object?.variable?.value;
+        const isOptional = pair.subType === "optional";
+        const isNotExists = pair.subType === "notExists";
+        const currentChain = [...currentParentChain, isOptional];
 
-        const branchState: any = {
-          optional: branch.optional,
-          notExists: branch.notExists || false,
+        const pairState: any = {
+          optional: isOptional,
+          notExists: isNotExists,
+          subType: pair.subType,
           parentOptionalChain: currentChain,
-          children: branch.children
-            ? saveState(branch.children, currentChain)
+          children: pair.object.predicateObjectPairs
+            ? saveState(pair.object.predicateObjectPairs, currentChain)
             : [],
         };
 
-        if (branchVariable) {
-          this.initialOptionalStates[branchVariable] = branchState;
+        if (pairVariable) {
+          this.initialOptionalStates[pairVariable] = pairState;
         }
       });
     };
 
-    saveState(queryBranches, parentOptionalChain);
+    saveState(pairs, parentOptionalChain);
   }
 
   /**
    * Updates the visibility and enabled state of "Any value" and "Not Exist" options.
    */
-
   public updateOptionVisibility() {
-    const hasValues = this.queryLine.values && this.queryLine.values.length > 0;
+    const hasValues =
+      (this.objectCriteria.values && this.objectCriteria.values.length > 0) ||
+      (this.objectCriteria.filters && this.objectCriteria.filters.length > 0);
 
     // Ensure elements exist before updating them
     if (!this.anydiv || !this.notExistDiv) {
       console.warn(
-        `Optional elements not created for variable: ${this.variable}`
+        `Optional elements not created for variable: ${this.variable}`,
       );
       return; // Exit if no options are created
     }
@@ -102,10 +109,7 @@ class OptionalCriteriaManager {
 
   /**
    * Creates the UI container for "Any value" and "Not Exist" options.
-   *
-   *
    */
-
   private createOptionContainer() {
     // Check if an option container already exists
     const existingOptionContainer =
@@ -115,15 +119,19 @@ class OptionalCriteriaManager {
       this.formFieldDiv.removeChild(existingOptionContainer);
     }
 
-    // Find the branch and its parent
-    const branch = this.findBranch(this.query.branches);
-    const branchParent = this.findBranchParent(this.query.branches);
+    // Find the pair and its parent
+    const pair = this.findPair(this.query.where.predicateObjectPairs);
+    const pairParent = this.findPairParent(
+      this.query.where.predicateObjectPairs,
+    );
 
-    // Check if either the branch or its parent is optional
-    const shouldCreateOptions = branch?.optional || branchParent?.optional;
+    // Check if either the pair or its parent is optional
+    const isOptional = pair?.subType === "optional";
+    const isParentOptional = pairParent?.subType === "optional";
+    const shouldCreateOptions = isOptional || isParentOptional;
 
     if (!shouldCreateOptions) {
-      // If neither the branch nor its parent is optional, skip creating options
+      // If neither the pair nor its parent is optional, skip creating options
       console.log(`Skipping option creation for variable: ${this.variable}`);
       return;
     }
@@ -201,7 +209,7 @@ class OptionalCriteriaManager {
           new CustomEvent("anyValueSelected", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       } else {
         this.resetToDefaultValueForWidget(this.variable);
@@ -219,7 +227,7 @@ class OptionalCriteriaManager {
           new CustomEvent("removeAnyValueOption", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       }
     });
@@ -258,7 +266,7 @@ class OptionalCriteriaManager {
           new CustomEvent("notExist", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       } else {
         this.removeNotExistsForWidget(this.variable);
@@ -276,7 +284,7 @@ class OptionalCriteriaManager {
           new CustomEvent("removeNotExistOption", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       }
     });
@@ -299,185 +307,164 @@ class OptionalCriteriaManager {
    */
   private removePill(type: string) {
     const existingPill = this.formFieldDiv.querySelector(
-      `.option-pill.${type}`
+      `.option-pill.${type}`,
     );
     if (existingPill) {
       existingPill.remove();
     }
   }
 
-  private attachValueChangeListener() {
-    this.widget.html[0].addEventListener(
-      "renderWidgetVal",
-      (e: CustomEvent) => {
-        console.log("Widget value change detected.");
-        console.log("Event detail:", e.detail);
-
-        // Vérifie si e.detail.value est défini avant de continuer
-        if (!e.detail || !e.detail.value) {
-          console.error("e.detail.value is undefined or invalid:", e.detail);
-          return;
-        }
-
-        // Normalise les nouvelles valeurs en tableau
-        const newValues = Array.isArray(e.detail.value)
-          ? e.detail.value
-          : [e.detail.value];
-
-        console.log("New values to inject:", newValues);
-
-        // Vérifie si newValues contient des objets valides
-        const validNewValues = newValues.filter(
-          (val: any) => val && val.label !== undefined
-        );
-        console.log("Valid new values:", validNewValues);
-
-        if (validNewValues.length === 0) {
-          console.warn("No valid new values found:", newValues);
-          return;
-        }
-
-        // Récupère les valeurs existantes (ou initialise un tableau vide)
-        const existingValues = this.queryLine.values || [];
-        console.log("Existing values:", existingValues);
-
-        // Fusionne les valeurs en évitant les doublons
-        const mergedValues = [
-          ...existingValues.filter(
-            (existing: { label: string }) =>
-              !validNewValues.some(
-                (newVal: { label: string }) => newVal.label === existing.label
-              )
-          ),
-          ...validNewValues,
-        ];
-
-        // Met à jour les valeurs dans `this.queryLine.values`
-        this.queryLine.values = mergedValues;
-
-        // Affiche les valeurs fusionnées pour débogage
-        console.log("Updated queryLine.values:", this.queryLine.values);
-
-        // Mets à jour la visibilité des options si nécessaire
-        if (this.anydiv && this.notExistDiv) {
-          this.updateOptionVisibility();
-        }
-      }
-    );
-  }
-
-  private findBranch(branches: Branch[]): Branch | null {
-    for (const branch of branches) {
-      if (branch.line.o === this.variable) return branch;
-      if (branch.children && branch.children.length > 0) {
-        const result = this.findBranch(branch.children);
+  private findPair(pairs: PredicateObjectPair[]): PredicateObjectPair | null {
+    for (const pair of pairs) {
+      if (pair.object.variable.value === this.variable) return pair;
+      if (
+        pair.object.predicateObjectPairs &&
+        pair.object.predicateObjectPairs.length > 0
+      ) {
+        const result = this.findPair(pair.object.predicateObjectPairs);
         if (result) return result;
       }
     }
     return null;
   }
 
-  private findBranchParent(branches: Branch[]): Branch | any {
-    for (const branch of branches) {
-      if (branch.children && branch.children.length > 0) {
-        const result = this.findBranch(branch.children);
-        if (result) return branch;
+  private findPairParent(
+    pairs: PredicateObjectPair[],
+  ): PredicateObjectPair | null {
+    for (const pair of pairs) {
+      if (
+        pair.object.predicateObjectPairs &&
+        pair.object.predicateObjectPairs.length > 0
+      ) {
+        // Check if any child has the target variable
+        const hasTargetChild = pair.object.predicateObjectPairs.some(
+          (child: PredicateObjectPair) =>
+            child.object.variable.value === this.variable,
+        );
+        if (hasTargetChild) return pair;
+
+        // Continue searching in nested pairs
+        const result = this.findPairParent(pair.object.predicateObjectPairs);
+        if (result) return result;
       }
     }
-    return false;
+    return null;
   }
 
   public setAnyValueForWidget(variable: string) {
     console.log(`Setting "Any value" for variable: ${variable}`);
     const adjustOptionalFlags = (
-      branches: Branch[],
-      targetVariable: string
+      pairs: PredicateObjectPair[],
+      targetVariable: string,
     ) => {
-      branches.forEach((branch: Branch) => {
-        const formVariable = branch.line.o;
-        if (formVariable === targetVariable && branch.optional === true) {
+      pairs.forEach((pair: PredicateObjectPair) => {
+        const pairVariable = pair.object.variable.value;
+        if (pairVariable === targetVariable && pair.subType === "optional") {
           console.log(
-            `Removing "optional: true" for variable: ${targetVariable}`
+            `Removing "optional" subType for variable: ${targetVariable}`,
           );
-          delete branch.optional;
+          delete pair.subType;
         }
-        if (branch.children && branch.children.length > 0) {
-          const childHasTargetVariable = branch.children.some(
-            (child: Branch) => child.line.o === targetVariable
+        if (
+          pair.object.predicateObjectPairs &&
+          pair.object.predicateObjectPairs.length > 0
+        ) {
+          const childHasTargetVariable = pair.object.predicateObjectPairs.some(
+            (child: PredicateObjectPair) =>
+              child.object.variable.value === targetVariable,
           );
-          if (childHasTargetVariable && branch.optional === true) {
+          if (childHasTargetVariable && pair.subType === "optional") {
             console.log(
-              `Removing "optional: true" for parent of variable: ${targetVariable}`
+              `Removing "optional" subType for parent of variable: ${targetVariable}`,
             );
-            delete branch.optional;
+            delete pair.subType;
           }
-          adjustOptionalFlags(branch.children, targetVariable);
+          adjustOptionalFlags(pair.object.predicateObjectPairs, targetVariable);
         }
       });
     };
-    adjustOptionalFlags(this.query.branches, variable);
+    adjustOptionalFlags(this.query.where.predicateObjectPairs, variable);
   }
 
   public resetToDefaultValueForWidget(variable: string) {
     console.log(`Resetting to default state for variable: ${variable}`);
 
     const restoreInitialState = (
-      branches: Branch[],
-      targetVariable: string
+      pairs: PredicateObjectPair[],
+      targetVariable: string,
     ) => {
-      branches.forEach((branch: Branch) => {
-        if (branch.line && branch.line.o === targetVariable) {
+      pairs.forEach((pair: PredicateObjectPair) => {
+        if (pair.object?.variable?.value === targetVariable) {
           const initialState = this.initialOptionalStates[targetVariable];
           if (initialState) {
-            branch.optional = initialState.optional;
-            branch.notExists = initialState.notExists;
+            // Restore subType based on initial state
+            if (initialState.optional) {
+              pair.subType = "optional";
+            } else if (initialState.notExists) {
+              pair.subType = "notExists";
+            } else {
+              delete pair.subType;
+            }
             this.restoreParentOptionalChain(
-              branch,
-              initialState.parentOptionalChain
+              pair,
+              initialState.parentOptionalChain,
             );
           }
         }
-        if (branch.children && branch.children.length > 0) {
-          restoreInitialState(branch.children, targetVariable);
+        if (
+          pair.object.predicateObjectPairs &&
+          pair.object.predicateObjectPairs.length > 0
+        ) {
+          restoreInitialState(pair.object.predicateObjectPairs, targetVariable);
         }
       });
     };
 
-    restoreInitialState(this.query.branches, variable);
+    restoreInitialState(this.query.where.predicateObjectPairs, variable);
   }
 
   private restoreParentOptionalChain(
-    branch: Branch,
-    parentOptionalChain: boolean[]
+    pair: PredicateObjectPair,
+    parentOptionalChain: boolean[],
   ) {
-    let currentBranch = branch;
+    let currentPair = pair;
     for (let i = parentOptionalChain.length - 1; i >= 0; i--) {
       const parentOptional = parentOptionalChain[i];
-      if (currentBranch) {
-        currentBranch.optional = parentOptional;
-        currentBranch = this.findParentBranch(
-          this.query.branches,
-          currentBranch.line.o
+      if (currentPair) {
+        if (parentOptional) {
+          currentPair.subType = "optional";
+        } else {
+          delete currentPair.subType;
+        }
+        currentPair = this.findParentPair(
+          this.query.where.predicateObjectPairs,
+          currentPair.object.variable.value,
         );
       }
     }
   }
 
-  private findParentBranch(
-    branches: Branch[],
-    childVariable: string
-  ): Branch | null {
-    for (const branch of branches) {
+  private findParentPair(
+    pairs: PredicateObjectPair[],
+    childVariable: string,
+  ): PredicateObjectPair | null {
+    for (const pair of pairs) {
       if (
-        branch.children &&
-        branch.children.some((child: Branch) => child.line.o === childVariable)
+        pair.object.predicateObjectPairs &&
+        pair.object.predicateObjectPairs.some(
+          (child: PredicateObjectPair) =>
+            child.object.variable.value === childVariable,
+        )
       ) {
-        return branch;
+        return pair;
       }
-      if (branch.children && branch.children.length > 0) {
-        const foundParent = this.findParentBranch(
-          branch.children,
-          childVariable
+      if (
+        pair.object.predicateObjectPairs &&
+        pair.object.predicateObjectPairs.length > 0
+      ) {
+        const foundParent = this.findParentPair(
+          pair.object.predicateObjectPairs,
+          childVariable,
         );
         if (foundParent) {
           return foundParent;
@@ -490,75 +477,87 @@ class OptionalCriteriaManager {
   public setNotExistsForWidget(variable: string) {
     console.log(`Setting "notExists" for variable: ${variable}`);
 
-    const addNotExistsFlag = (branches: Branch[], targetVariable: string) => {
-      branches.forEach((branch: Branch) => {
-        if (branch.line && branch.line.o === targetVariable) {
+    const addNotExistsFlag = (
+      pairs: PredicateObjectPair[],
+      targetVariable: string,
+    ) => {
+      pairs.forEach((pair: PredicateObjectPair) => {
+        if (pair.object?.variable?.value === targetVariable) {
           console.log(
-            `Adding "notExists: true" for variable: ${targetVariable}`
+            `Adding "notExists" subType for variable: ${targetVariable}`,
           );
-          branch.notExists = true;
-          if (branch.optional === true) {
-            console.log(
-              `Removing "optional: true" for variable: ${targetVariable}`
-            );
-            delete branch.optional;
-          }
+          pair.subType = "notExists";
         }
-        if (branch.children && branch.children.length > 0) {
-          addNotExistsFlag(branch.children, targetVariable);
+        if (
+          pair.object.predicateObjectPairs &&
+          pair.object.predicateObjectPairs.length > 0
+        ) {
+          addNotExistsFlag(pair.object.predicateObjectPairs, targetVariable);
         }
       });
     };
 
     const adjustParentOptionalFlags = (
-      branches: Branch[],
-      targetVariable: string
+      pairs: PredicateObjectPair[],
+      targetVariable: string,
     ) => {
-      branches.forEach((branch: Branch) => {
-        const childHasTargetVariable = branch.children.some(
-          (child: Branch) => child.line.o === targetVariable
-        );
-        if (childHasTargetVariable && branch.optional === true) {
-          console.log(
-            `Removing "optional: true" for parent of variable: ${targetVariable}`
+      pairs.forEach((pair: PredicateObjectPair) => {
+        if (pair.object.predicateObjectPairs) {
+          const childHasTargetVariable = pair.object.predicateObjectPairs.some(
+            (child: PredicateObjectPair) =>
+              child.object.variable.value === targetVariable,
           );
-          delete branch.optional;
-        }
-        if (branch.children && branch.children.length > 0) {
-          adjustParentOptionalFlags(branch.children, targetVariable);
+          if (childHasTargetVariable && pair.subType === "optional") {
+            console.log(
+              `Removing "optional" subType for parent of variable: ${targetVariable}`,
+            );
+            delete pair.subType;
+          }
+          if (pair.object.predicateObjectPairs.length > 0) {
+            adjustParentOptionalFlags(
+              pair.object.predicateObjectPairs,
+              targetVariable,
+            );
+          }
         }
       });
     };
 
-    addNotExistsFlag(this.query.branches, variable);
-    adjustParentOptionalFlags(this.query.branches, variable);
+    addNotExistsFlag(this.query.where.predicateObjectPairs, variable);
+    adjustParentOptionalFlags(this.query.where.predicateObjectPairs, variable);
   }
 
   public removeNotExistsForWidget(variable: string) {
     console.log(`Removing "notExists" for variable: ${variable}`);
 
     const removeNotExistsFlag = (
-      branches: Branch[],
-      targetVariable: string
+      pairs: PredicateObjectPair[],
+      targetVariable: string,
     ) => {
-      branches.forEach((branch: Branch) => {
-        if (branch.line && branch.line.o === targetVariable) {
-          delete branch.notExists;
+      pairs.forEach((pair: PredicateObjectPair) => {
+        if (pair.object?.variable?.value === targetVariable) {
+          delete pair.subType;
           const initialState = this.initialOptionalStates[targetVariable];
           if (initialState) {
-            branch.optional = initialState.optional;
+            if (initialState.optional) {
+              pair.subType = "optional";
+            }
             this.restoreParentOptionalChain(
-              branch,
-              initialState.parentOptionalChain
+              pair,
+              initialState.parentOptionalChain,
             );
           }
         }
-        if (branch.children && branch.children.length > 0) {
-          removeNotExistsFlag(branch.children, targetVariable);
+        if (
+          pair.object.predicateObjectPairs &&
+          pair.object.predicateObjectPairs.length > 0
+        ) {
+          removeNotExistsFlag(pair.object.predicateObjectPairs, targetVariable);
         }
       });
     };
-    removeNotExistsFlag(this.query.branches, variable);
+    removeNotExistsFlag(this.query.where.predicateObjectPairs, variable);
   }
 }
+
 export default OptionalCriteriaManager;

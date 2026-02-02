@@ -1,7 +1,7 @@
 import ActionStoreForm from "../ActionStore";
 import { Generator } from "sparqljs";
-import { SparnaturalQueryIfc } from "sparnatural";
-import { JsonSparqlTranslator } from "sparnatural";
+import { SparnaturalQuery } from "sparnatural";
+import { JsonV13SparqlTranslator } from "sparnatural";
 import CleanQuery from "../../components/CleanQuery";
 
 export class QueryGeneratorForm {
@@ -24,10 +24,23 @@ export class QueryGeneratorForm {
 
     // Step 1: Handle optional branches to get the clean query result
     const sparnaturalForm = this.actionStoreForm.sparnaturalForm;
+
+    // DEBUG: Log the original jsonQuery to see if values are there
+    console.log(
+      "[DEBUG] Original jsonQuery:",
+      JSON.stringify(sparnaturalForm.jsonQuery, null, 2),
+    );
+
     sparnaturalForm.HandleOptional();
 
     // Step 2: Retrieve the last cleaned query
-    let queryToUse: SparnaturalQueryIfc = sparnaturalForm.cleanQueryResult;
+    let queryToUse: SparnaturalQuery = sparnaturalForm.cleanQueryResult;
+
+    // DEBUG: Log the cleanQueryResult after HandleOptional
+    console.log(
+      "[DEBUG] cleanQueryResult after HandleOptional:",
+      JSON.stringify(queryToUse, null, 2),
+    );
     // Step 4: Translate the final clean query into SPARQL
     const settings = sparnaturalForm.settings;
     console.log("settings for SPARQL generation:", settings);
@@ -35,15 +48,19 @@ export class QueryGeneratorForm {
     const cleanQueryProcessor = new CleanQuery(
       queryToUse,
       sparnaturalForm.formConfig,
-      settings
+      settings,
     );
     const finalCleanQuery = cleanQueryProcessor.cleanQueryToUse(resultType);
 
-    //console.log("Final Clean Query for SPARQL generation:", finalCleanQuery);
+    // DEBUG: Log the finalCleanQuery that will be passed to SPARQL translator
+    console.log(
+      "[DEBUG] finalCleanQuery for SPARQL generation:",
+      JSON.stringify(finalCleanQuery, null, 2),
+    );
 
-    const sparqlTranslator = new JsonSparqlTranslator(
+    const sparqlTranslator = new JsonV13SparqlTranslator(
       this.actionStoreForm.specProvider,
-      settings
+      settings,
     );
 
     const sparqlJsQuery = sparqlTranslator.generateQuery(finalCleanQuery);
@@ -71,12 +88,12 @@ export class QueryGeneratorForm {
       new CustomEvent("queryUpdated", {
         bubbles: true,
         detail: payload,
-      })
+      }),
     );
   }
 }
 
 export class QueryUpdatedPayload {
   queryString: string;
-  queryJson: SparnaturalQueryIfc;
+  queryJson: SparnaturalQuery;
 }

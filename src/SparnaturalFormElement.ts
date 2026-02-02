@@ -3,7 +3,7 @@ import $ from "jquery";
 import SparnaturalFormComponent from "./sparnatural-form/components/SparnaturalFormComponent";
 import { SparnaturalFormAttributes } from "./SparnaturalFormAttributes";
 import { defaultSettings, extend } from "./sparnatural-form/settings/Settings";
-import { SparqlHandlerFactory, SparqlHandlerIfc } from "sparnatural";
+import { SparqlHandlerFactory, SparqlHandlerIfc } from "rdf-shacl-commons";
 import ISettings from "./sparnatural-form/settings/ISettings";
 
 /*
@@ -51,7 +51,7 @@ export class SparnaturalFormElement extends HTMLElement {
       true,
       this.settings,
       defaultSettings,
-      this._attributes
+      this._attributes,
     ) as ISettings;
 
     // create the sparnatural-form instance
@@ -74,7 +74,7 @@ export class SparnaturalFormElement extends HTMLElement {
   expandSparql(query: string) {
     return this.sparnaturalForm.specProvider.expandSparql(
       query,
-      this.settings.sparqlPrefixes
+      this.settings.sparqlPrefixes,
     );
   }
 
@@ -85,7 +85,7 @@ export class SparnaturalFormElement extends HTMLElement {
   attributeChangedCallback(
     name: string,
     oldValue: string | null,
-    newValue: string | null
+    newValue: string | null,
   ) {
     if (oldValue === newValue) {
       return;
@@ -95,7 +95,7 @@ export class SparnaturalFormElement extends HTMLElement {
     if (oldValue != null) {
       if (this.settings.debug) {
         console.log(
-          `${name}'s value has been changed from ${oldValue} to ${newValue}`
+          `${name}'s value has been changed from ${oldValue} to ${newValue}`,
         );
       }
       switch (name) {
@@ -145,14 +145,14 @@ export class SparnaturalFormElement extends HTMLElement {
   executeSparql(
     query: string,
     callback: (data: any) => void,
-    errorCallback?: (error: any) => void
+    errorCallback?: (error: any) => void,
   ) {
     let sparqlFetcherFactory: SparqlHandlerFactory = new SparqlHandlerFactory(
       this.settings.language,
       this.settings.localCacheDataTtl,
       this.settings.customization.headers,
       this.settings.customization.sparqlHandler,
-      this.sparnaturalForm.catalog
+      this.sparnaturalForm.catalog,
     );
 
     let sparqlFetcher: SparqlHandlerIfc =
@@ -164,5 +164,5 @@ export class SparnaturalFormElement extends HTMLElement {
 customElements.get(SparnaturalFormElement.HTML_ELEMENT_NAME) ||
   window.customElements.define(
     SparnaturalFormElement.HTML_ELEMENT_NAME,
-    SparnaturalFormElement
+    SparnaturalFormElement,
   );

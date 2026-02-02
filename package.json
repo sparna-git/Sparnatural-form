@@ -36,6 +36,7 @@
     "@types/select2": "^4.0.63",
     "@types/sortablejs": "^1.15.8",
     "copy-webpack-plugin": "^12.0.2",
+    "crypto-browserify": "^3.12.1",
     "css-loader": "^7.1.2",
     "filemanager-webpack-plugin": "^8.0.0",
     "html-webpack-plugin": "^5.6.3",
@@ -44,6 +45,7 @@
     "sass-loader": "^16.0.4",
     "ts-loader": "^9.5.1",
     "url-loader": "^4.1.1",
+    "vm-browserify": "^1.1.2",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",
     "webpack-dashboard": "^3.3.8",
@@ -53,7 +55,7 @@
   "dependencies": {
     "@chenfengyuan/datepicker": "^1.0.10",
     "querystring-es3": "^0.2.1",
-    "sparnatural": "^11.1.0",
+    "sparnatural": "file:../Sparnatural/sparnatural-12.0.0.tgz",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.4",
     "util": "^0.12.5"

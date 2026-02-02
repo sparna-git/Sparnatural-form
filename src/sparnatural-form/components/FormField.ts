@@ -1,17 +1,17 @@
-import { WidgetFactory } from "sparnatural";
+import {
+  PredicateObjectPair,
+  WidgetFactory,
+  TermLabelledIri,
+  TermLiteral,
+  labelledCriteriaToFlatValues,
+  labelledCriteriaToFilters,
+} from "sparnatural";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import { UnselectBtn } from "sparnatural";
-import {
-  Branch,
-  CriteriaLine,
-  SparnaturalQueryIfc,
-} from "sparnatural";
+import { SparnaturalQuery } from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import OptionalCriteriaManager from "./optionalCriteria/OptionalCriteriaManager";
-import {
-  AbstractWidget,
-  ValueRepetition,
-} from "sparnatural";
+import { AbstractWidget, ValueRepetition } from "sparnatural";
 import { Binding } from "../FormStructure";
 import tippy from "tippy.js";
 import { I18nForm } from "../settings/I18nForm";
@@ -20,7 +20,7 @@ class FormField {
   private binding: Binding;
   private formContainer: HTMLElement;
   private specProvider: ISparnaturalSpecification;
-  private query: SparnaturalQueryIfc;
+  private query: SparnaturalQuery;
   private widgetFactory: WidgetFactory;
   private optionalCriteriaManager!: OptionalCriteriaManager; // Optional Criteria Manager instance
 
@@ -28,8 +28,8 @@ class FormField {
     binding: Binding,
     formContainer: HTMLElement,
     specProvider: ISparnaturalSpecification,
-    query: SparnaturalQueryIfc,
-    widgetFactory: WidgetFactory
+    query: SparnaturalQuery,
+    widgetFactory: WidgetFactory,
   ) {
     this.binding = binding;
     this.formContainer = formContainer;
@@ -64,23 +64,23 @@ class FormField {
     }, 500);
 
     // Find the line in the query corresponding to the variable
-    const queryLine = this.findInBranches(this.query.branches, variable);
+    const pair =
+      this.query.where.subType === "bgpSameSubject"
+        ? this.findPredicateObjectPair(
+            this.query.where.predicateObjectPairs,
+            variable,
+          )
+        : null;
 
-    if (queryLine) {
-      const widget = this.createWidget(queryLine);
+    if (!pair) return;
+
+    if (pair) {
+      const widget = this.createWidget(pair);
       formFieldDiv.appendChild(widget.html[0]);
 
-      // Initialize OptionalCriteriaManager
-      this.optionalCriteriaManager = new OptionalCriteriaManager(
-        this.query,
-        variable,
-        queryLine,
-        widget,
-        formFieldDiv
-      );
-
-      // Add options like "An'y value" and "Not Exist"
-      this.addValuesAndOptions(formFieldDiv, queryLine, widget, variable);
+      // Add options like "Any value" and "Not Exist"
+      // This also initializes OptionalCriteriaManager
+      this.addValuesAndOptions(formFieldDiv, pair, widget, variable);
     }
   }
 
@@ -109,7 +109,7 @@ class FormField {
     if (helpText) {
       helpIcon.setAttribute(
         "data-tippy-content",
-        helpText.replace(/"/g, "&quot;")
+        helpText.replace(/"/g, "&quot;"),
       );
       label.appendChild(helpIcon);
     }
@@ -117,176 +117,249 @@ class FormField {
   }
 
   //method to find the line in the query corresponding to the variable
-  private findInBranches(
-    branches: Branch[],
-    variable: string
-  ): CriteriaLine | null {
-    for (const branch of branches) {
-      if (branch.line.o === variable) return branch.line;
-      if (branch.children && branch.children.length > 0) {
-        const result = this.findInBranches(branch.children, variable);
-        if (result) return result;
+  private findPredicateObjectPair(
+    pairs: PredicateObjectPair[],
+    variable: string,
+  ): PredicateObjectPair | null {
+    for (const pair of pairs) {
+      if (pair.object.variable.value === variable) {
+        return pair;
+      }
+      if (pair.object.predicateObjectPairs) {
+        const found = this.findPredicateObjectPair(
+          pair.object.predicateObjectPairs,
+          variable,
+        );
+        if (found) return found;
       }
     }
     return null;
   }
 
-  private createWidget(queryLine: CriteriaLine): AbstractWidget {
-    const subject = queryLine.sType;
-    const predicate = queryLine.p;
-    const object = queryLine.oType;
+  private createWidget(pair: PredicateObjectPair): AbstractWidget {
+    const subject = this.query.where.subject;
+    const predicate = pair.predicate;
+    const objectVar = pair.object.variable;
 
-    const specEntity = this.specProvider.getEntity(subject);
-    const connectingProperty = this.specProvider.getProperty(predicate);
+    const specEntity = this.specProvider.getEntity(subject.rdfType);
+    const connectingProperty = this.specProvider.getProperty(predicate.value);
 
     const widget = this.widgetFactory.buildWidget(
-      { variable: queryLine.s, type: specEntity.getId() },
+      { variable: subject.value, type: specEntity.getId() },
       { variable: "predicate", type: connectingProperty.getId() },
-      { variable: queryLine.o, type: object }
+      { variable: objectVar.value, type: objectVar.rdfType },
     );
+
     widget.render();
-    // console.log("widget", widget);
     return widget;
   }
 
   //methode to add values and options to the widget in the form
   private addValuesAndOptions(
     formFieldDiv: HTMLElement,
-    queryLine: CriteriaLine,
+    pair: PredicateObjectPair,
     widget: AbstractWidget,
-    variable: string
+    variable: string,
   ): void {
     const valueDisplay = document.createElement("div");
-    valueDisplay.setAttribute("id", `selected-value-${variable}`);
+    valueDisplay.id = `selected-value-${variable}`;
     valueDisplay.classList.add("value-display-container");
     valueDisplay.style.marginTop = "5px";
     formFieldDiv.appendChild(valueDisplay);
 
-    // Add a set to store selected values and a method to update the display
-
     const selectedValues = new Set<any>();
+
+    // Initialiser avec les valeurs existantes (important)
+    if (pair.object.values) {
+      pair.object.values.forEach((v) => selectedValues.add(v));
+    } else {
+      pair.object.values = [];
+    }
+
+    // Initialiser avec les filtres existants (dates, nombres, etc.)
+    if (pair.object.filters) {
+      pair.object.filters.forEach((f) => selectedValues.add(f));
+    } else {
+      pair.object.filters = [];
+    }
+
     const updateValueDisplay = () => {
       valueDisplay.innerHTML = "";
-      selectedValues.forEach((val) => {
+
+      selectedValues.forEach((val: any) => {
         const valueContainer = document.createElement("div");
         valueContainer.classList.add("selected-value-container");
+
         const valueLabel = document.createElement("span");
-        valueLabel.innerText = `${val.label}`;
+        // Get the label from _label (stored for display) or from the v13 GraphTerm directly
+        const displayLabel = val._label ?? val.label ?? val.value ?? "Unknown";
+        valueLabel.innerText = displayLabel;
         valueLabel.classList.add("selected-value-label");
         valueContainer.appendChild(valueLabel);
 
         const removeBtn = new UnselectBtn(widget, () => {
           selectedValues.delete(val);
-          console.log(selectedValues);
-          updateValueDisplay();
-          queryLine.values = Array.from(selectedValues);
-          console.log("QUERYLINE ", queryLine);
 
-          // Vide les champs input du widget
-          const inputs = widget.html[0].querySelectorAll("input");
-          inputs.forEach((input) => {
-            (input as HTMLInputElement).value = "";
-          });
+          // Update pair.object.values with v13 GraphTerm format (without _label)
+          pair.object.values = Array.from(selectedValues)
+            .filter((v: any) => v.type === "term") // Only include GraphTerm values
+            .map((v: any) => {
+              const { _label, ...rest } = v;
+              return rest;
+            }) as any;
+
+          // Update pair.object.filters with v13 LabelledFilter format (without _label)
+          pair.object.filters = Array.from(selectedValues)
+            .filter((v: any) => v.type === "labelledFilter") // Only include filters
+            .map((v: any) => {
+              const { _label, ...rest } = v;
+              return rest;
+            }) as any;
+
+          updateValueDisplay();
+
+          // reset widget inputs
+          widget.html[0]
+            .querySelectorAll("input")
+            .forEach((input) => ((input as HTMLInputElement).value = ""));
+
           formFieldDiv.dispatchEvent(
             new CustomEvent("valueRemoved", {
               bubbles: true,
-              detail: { value: val, variable: variable },
-            })
+              detail: { value: val, variable },
+            }),
           );
 
-          // Update options visibility
-          if (this.optionalCriteriaManager) {
-            this.optionalCriteriaManager.updateOptionVisibility();
-          }
+          this.optionalCriteriaManager?.updateOptionVisibility();
         }).render();
+
         valueContainer.appendChild(removeBtn.html[0]);
         valueDisplay.appendChild(valueContainer);
       });
     };
 
-    // Add existing values to the widget
+    updateValueDisplay();
 
-    // Add an event listener to add values to the widget
+    // Listener venant du widget Sparnatural
+    // e.detail is directly the v1 LabelledCriteria format: { label: "...", criteria: { rdfTerm: {...} } } or { label: "...", criteria: { start: "...", stop: "..." } }
     widget.html[0].addEventListener("renderWidgetVal", (e: CustomEvent) => {
-      //console.log("widget", widget);
-      console.log("e.detail", e.detail);
-
-      let valueToInject: any[];
-
-      // Handle different cases for e.detail
-      if (Array.isArray(e.detail)) {
-        // Case: e.detail is an array
-        valueToInject = e.detail.map((item: any) => item.value);
-        console.log("here");
-        typeof valueToInject[0] === "string";
-      } else if (e.detail.value) {
-        // Case: e.detail contains a single value or a wrapped object
-        valueToInject = Array.isArray(e.detail.value)
-          ? e.detail.value
-          : [e.detail.value];
-      } else {
-        console.warn("Unexpected e.detail format:", e.detail);
-        return; // Exit early if the format is not recognized
+      if (!e.detail) {
+        console.warn(
+          "Unexpected widget value format - e.detail is undefined",
+          e.detail,
+        );
+        return;
       }
 
-      console.log("valueToInject", valueToInject);
+      // Normalize to array - e.detail is the v1 LabelledCriteria directly
+      const v1Values = Array.isArray(e.detail) ? e.detail : [e.detail];
 
-      valueToInject.forEach((val: any) => {
-        const isSingleValue = widget.valueRepetition === ValueRepetition.SINGLE;
+      // Filter valid v1 LabelledCriteria values (must have label)
+      const validV1Values = v1Values.filter(
+        (val: any) => val && val.label !== undefined,
+      );
 
-        // Si SINGLE et une valeur déjà existante → Afficher warning
-        if (isSingleValue && selectedValues.size > 0) {
-          // Créer un message d'alerte temporaire
-          let warningMsg = formFieldDiv.querySelector(
-            ".single-value-warning"
+      if (validV1Values.length === 0) {
+        console.warn("No valid v1 values found", v1Values);
+        return;
+      }
+
+      validV1Values.forEach((v1Val: any) => {
+        const isSingle = widget.valueRepetition === ValueRepetition.SINGLE;
+
+        if (isSingle && selectedValues.size > 0) {
+          let warning = formFieldDiv.querySelector(
+            ".single-value-warning",
           ) as HTMLElement;
-          if (!warningMsg) {
-            warningMsg = document.createElement("div");
-            warningMsg.classList.add("single-value-warning");
-            warningMsg.innerText = I18nForm.labels["messageSingleValue"];
-            warningMsg.style.color = "red";
-            warningMsg.style.fontSize = "13px";
-            formFieldDiv.insertBefore(warningMsg, valueDisplay);
 
-            // Supprimer automatiquement après 5 secondes
-            setTimeout(() => {
-              warningMsg.remove();
-            }, 5000);
+          if (!warning) {
+            warning = document.createElement("div");
+            warning.classList.add("single-value-warning");
+            warning.innerText = I18nForm.labels["messageSingleValue"];
+            warning.style.color = "red";
+            warning.style.fontSize = "13px";
+            formFieldDiv.insertBefore(warning, valueDisplay);
+
+            setTimeout(() => warning.remove(), 5000);
           }
-          return; // Ne pas ajouter la nouvelle valeur
+          return;
         }
 
-        const existingValue = Array.from(selectedValues).find(
-          (existingVal: any) => existingVal.label === val.label
+        // Check if already exists by label
+        const alreadyExists = Array.from(selectedValues).some(
+          (v: any) => v._label === v1Val.label,
         );
 
-        if (!existingValue) {
-          selectedValues.add(val);
+        if (!alreadyExists) {
+          // Use adapter functions to convert v1 to v13
+          // Try to convert as flat values (rdfTerm - URIs/literals)
+          const flatValues = labelledCriteriaToFlatValues([v1Val]);
+          // Try to convert as filters (date, number, search, map)
+          const filters = labelledCriteriaToFilters([v1Val]);
 
-          updateValueDisplay();
-          queryLine.values = Array.from(selectedValues);
+          if (flatValues.length > 0) {
+            // It's an rdfTerm value - add to values
+            const v13Value = flatValues[0];
+            const valueWithLabel = { ...v13Value, _label: v1Val.label };
+            selectedValues.add(valueWithLabel);
 
-          formFieldDiv.dispatchEvent(
-            new CustomEvent("valueAdded", {
-              bubbles: true,
-              detail: { value: val, variable: variable },
-            })
-          );
+            // Update pair.object.values with v13 GraphTerm format (without _label)
+            pair.object.values = Array.from(selectedValues)
+              .filter((v: any) => v.type === "term") // Only include GraphTerm values
+              .map((v: any) => {
+                const { _label, ...rest } = v;
+                return rest;
+              }) as any;
 
-          if (this.optionalCriteriaManager) {
-            this.optionalCriteriaManager.updateOptionVisibility();
+            updateValueDisplay();
+
+            formFieldDiv.dispatchEvent(
+              new CustomEvent("valueAdded", {
+                bubbles: true,
+                detail: { value: v13Value, variable },
+              }),
+            );
+
+            this.optionalCriteriaManager?.updateOptionVisibility();
+          } else if (filters.length > 0) {
+            // It's a filter (date, number, search, map) - add to filters
+            const v13Filter = filters[0];
+            const filterWithLabel = { ...v13Filter, _label: v1Val.label };
+            selectedValues.add(filterWithLabel);
+
+            // Update pair.object.filters with v13 LabelledFilter format (without _label)
+            if (!pair.object.filters) {
+              pair.object.filters = [];
+            }
+            pair.object.filters = Array.from(selectedValues)
+              .filter((v: any) => v.type === "labelledFilter") // Only include filters
+              .map((v: any) => {
+                const { _label, ...rest } = v;
+                return rest;
+              }) as any;
+
+            updateValueDisplay();
+
+            formFieldDiv.dispatchEvent(
+              new CustomEvent("valueAdded", {
+                bubbles: true,
+                detail: { value: v13Filter, variable },
+              }),
+            );
+
+            this.optionalCriteriaManager?.updateOptionVisibility();
           }
         }
       });
     });
 
-    // Add An'yValue and NotExist options
+    // Initialisation du manager OPTIONAL v13
     this.optionalCriteriaManager = new OptionalCriteriaManager(
       this.query,
       variable,
-      queryLine,
+      pair.object,
       widget,
-      formFieldDiv
+      formFieldDiv,
     );
   }
 }
