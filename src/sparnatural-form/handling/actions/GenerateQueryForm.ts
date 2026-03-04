@@ -1,7 +1,6 @@
 import ActionStoreForm from "../ActionStore";
 import { Generator } from "sparqljs";
-import { SparnaturalQueryIfc } from "sparnatural";
-import { JsonSparqlTranslator } from "sparnatural";
+import { JsonSparqlTranslator, SparnaturalQueryIfc } from "sparnatural";
 import CleanQuery from "../../components/CleanQuery";
 
 export class QueryGeneratorForm {

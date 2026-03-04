@@ -1,0 +1,193 @@
+{
+  "bindings": [
+    {
+      "variable": "Libelle",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Libellé de la procédure"
+        }
+      }
+    },
+
+    {
+      "variable": "Libelle_2",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Libellé de la notice"
+        }
+      }
+    },
+
+        {
+      "variable": "TypeProcedure",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Type de procédure"
+        }
+      }
+    },
+  
+          {
+      "variable": "Libelle_3",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Cote"
+        }
+      }
+    },
+
+
+            {
+      "variable": "Juridiction",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Juridiction"
+        }
+      }
+    },
+
+
+            {
+      "variable": "LegalStatus",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Type de juridiction"
+        }
+      }
+    },
+
+
+
+            {
+      "variable": "Coordinates",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Lieu des faits (carte)"
+        }
+      }
+    },
+
+
+
+
+            {
+      "variable": "Lieu_2",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Lieu des faits (autocomplete)"
+        }
+      }
+    },
+
+
+        {
+      "variable": "PersonneMorale",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Personne Morale"
+        }
+      }
+    },
+
+
+            {
+      "variable": "PersonnePhysique",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Personne Physique"
+        }
+      }
+    },
+
+
+
+
+            {
+      "variable": "EventType",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Qualification des faits"
+        }
+      }
+    },
+
+
+
+            {
+      "variable": "DemographicGroup",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Sexe"
+        }
+      }
+    },
+
+
+
+
+            {
+      "variable": "OccupationType",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Profession"
+        }
+      }
+    },
+
+
+
+
+
+
+            {
+      "variable": "CorporateBodyType",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Type de collectivité"
+        }
+      }
+    },
+
+
+
+            {
+      "variable": "Date",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Date début"
+        }
+      }
+    },
+
+
+                {
+      "variable": "Date_2",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Date fin"
+        }
+      }
+    }
+
+
+
+
+
+  ]
+}

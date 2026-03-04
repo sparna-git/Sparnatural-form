@@ -1,19 +1,17 @@
-import { I18n, SparnaturalSpecificationFactory, WidgetFactory } from "sparnatural";
+import { Branch, I18n, SparnaturalQueryIfc, SparnaturalSpecificationFactory, WidgetFactory } from "sparnatural";
 import { HTMLComponent } from "sparnatural";
-import {
-  Branch,
-  SparnaturalQueryIfc,
-} from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import ISettings from "../settings/ISettings";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import ActionStoreForm from "../handling/ActionStore"; // Importer le store
-import { Catalog } from "sparnatural";
+import * as YAML from 'js-yaml';
 import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
 import FormField from "./FormField";
 import { Binding, Form } from "../FormStructure";
 import { I18nForm } from "../settings/I18nForm";
+import { Catalog } from "rdf-shacl-commons";
+
 
 /**
  * the content of all HTML element attributes
@@ -84,12 +82,12 @@ class SparnaturalFormComponent extends HTMLComponent {
   ) {
     branches.forEach((branch: Branch) => {
       const formVariable = branch.line.o;
-      const hasValues = branch.line.values && branch.line.values.length > 0;
+      const hasValues = branch.line.criterias && branch.line.criterias.length > 0;
       // Remove the optional flag if the branch has values
       if (
         hasValues ||
-        branch.children.some(
-          (child: Branch) => child.line.values && child.line.values.length > 0
+        branch.children?.some(
+          (child: Branch) => child.line.criterias && child.line.criterias.length > 0
         )
       ) {
         branch.optional = false;
@@ -119,59 +117,92 @@ class SparnaturalFormComponent extends HTMLComponent {
         this.jsonQuery = query;
         this.actionStoreForm = new ActionStoreForm(this, this.specProvider);
 
-        // Charger le fichier de configuration du formulaire
+        // Charger le fichier de configuration du formulaire (JSON ou YAML)
         const formUrl = this.settings.form;
-        $.getJSON(formUrl, (formConfig) => {
-          if (!formConfig || !formConfig.bindings) {
-            console.error("formConfig or formConfig.bindings is undefined");
-            return;
-          }
+        fetch(formUrl)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text().then((text) => ({
+              text,
+              contentType: response.headers.get("content-type"),
+            }));
+          })
+          .then(({ text, contentType }) => {
+            let formConfig: any;
+            try {
+              if (contentType && contentType.includes("json")) {
+                formConfig = JSON.parse(text);
+              } else if (
+                contentType &&
+                (contentType.includes("yaml") || contentType.includes("yml"))
+              ) {
+                formConfig = YAML.load(text);
+              } else {
+                // Fallback: try JSON, then YAML
+                try {
+                  formConfig = JSON.parse(text);
+                } catch (e) {
+                  formConfig = YAML.load(text);
+                }
+              }
+            } catch (err) {
+              console.error("Unable to parse form configuration (JSON/YAML):", err);
+              return;
+            }
 
-          this.formConfig = formConfig; // Stocker la configuration du formulaire ici
+            if (!formConfig || !formConfig.bindings) {
+              console.error("formConfig or formConfig.bindings is undefined");
+              return;
+            }
 
-          // Initialisation des labels
-          this.#initSparnaturalFormStaticLabels(formConfig);
+            this.formConfig = formConfig; // Stocker la configuration du formulaire ici
 
-          // Génération des champs du formulaire
-          formConfig.bindings.forEach((binding: Binding) => {
-            const fieldGenerator = new FormField(
-              binding,
-              this.html[0],
-              this.specProvider,
-              this.jsonQuery,
-              new WidgetFactory(this, this.specProvider, this.settings, null)
+            // Initialisation des labels
+            this.#initSparnaturalFormStaticLabels(formConfig);
+
+            // Génération des champs du formulaire
+            formConfig.bindings.forEach((binding: Binding) => {
+              const fieldGenerator = new FormField(
+                binding,
+                this.html[0],
+                this.specProvider,
+                this.jsonQuery,
+                new WidgetFactory(this, this.specProvider, this.settings, null)
+              );
+              fieldGenerator.generateField();
+            });
+
+            this.makeFormScrollable();
+
+            // Ajouter les boutons Reset/Search sans ID
+            if (this.settings.submitButton) {
+              const submitBtn = document.createElement("div");
+              submitBtn.setAttribute("class", "submitSection");
+              this.html[0].appendChild(submitBtn);
+              this.SubmitSection = new SubmitSection(
+                this,
+                $(submitBtn),
+                this.settings
+              );
+
+              this.SubmitSection.render();
+            }
+
+            // fire init event at the end
+            this.html[0].dispatchEvent(
+              new CustomEvent(SparnaturalFormElement.EVENT_INIT, {
+                bubbles: true,
+                detail: {
+                  sparnaturalForm: this,
+                },
+              })
             );
-            fieldGenerator.generateField();
+          })
+          .catch((error) => {
+            console.error("Error loading form configuration:", error);
           });
-
-          this.makeFormScrollable();
-
-          // Ajouter les boutons Reset/Search sans ID
-          if (this.settings.submitButton) {
-            const submitBtn = document.createElement("div");
-            submitBtn.setAttribute("class", "submitSection");
-            this.html[0].appendChild(submitBtn);
-            this.SubmitSection = new SubmitSection(
-              this,
-              $(submitBtn),
-              this.settings
-            );
-
-            this.SubmitSection.render();
-          }
-
-          // fire init event at the end
-          this.html[0].dispatchEvent(
-            new CustomEvent(SparnaturalFormElement.EVENT_INIT, {
-              bubbles: true,
-              detail: {
-                sparnaturalForm: this,
-              },
-            })
-          );
-        }).fail((error) => {
-          console.error("Error loading form configuration:", error);
-        });
       });
     });
 
@@ -214,7 +245,7 @@ class SparnaturalFormComponent extends HTMLComponent {
 
     // Réinitialiser la requête JSON pour supprimer toutes les valeurs sélectionnées
     this.jsonQuery.branches.forEach((branch: Branch) => {
-      branch.line.values = []; // Vider toutes les valeurs
+      branch.line.criterias = []; // Vider toutes les valeurs
     });
 
     // Ajouter un événement pour vider l'éditeur SPARQL
@@ -251,13 +282,22 @@ class SparnaturalFormComponent extends HTMLComponent {
     let settings = this.settings;
     let me = this;
     if (settings.catalog) {
-      $.getJSON(settings.catalog, function (data) {
-        me.catalog = new Catalog(data);
-      }).fail(function (response) {
-        console.error(
-          "Sparnatural - unable to load catalog file : " + settings.catalog
-        );
-      });
+      fetch(settings.catalog)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          me.catalog = new Catalog(data);
+        })
+        .catch((error) => {
+          console.error(
+            "Sparnatural - unable to load catalog file : " + settings.catalog,
+            error
+          );
+        });
     }
   }
 
@@ -268,15 +308,22 @@ class SparnaturalFormComponent extends HTMLComponent {
   initJsonQuery(callback: (query: SparnaturalQueryIfc) => void) {
     let queryUrl = this.settings.query;
 
-    $.when(
-      $.getJSON(queryUrl, function (data) {
-        callback(data as SparnaturalQueryIfc);
-      }).fail(function (response) {
-        console.error(
-          "Sparnatural - unable to load JSON query file : " + queryUrl
-        );
+    fetch(queryUrl)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
       })
-    ).done(function () {});
+      .then((data) => {
+        callback(data as SparnaturalQueryIfc);
+      })
+      .catch((error) => {
+        console.error(
+          "Sparnatural - unable to load JSON query file : " + queryUrl,
+          error
+        );
+      });
   }
 
   #initLang() {

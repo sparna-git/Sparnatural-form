@@ -1,9 +1,4 @@
-import { AbstractWidget } from "sparnatural";
-import {
-  Branch,
-  CriteriaLine,
-  SparnaturalQueryIfc,
-} from "sparnatural";  
+import { AbstractWidget, Branch, CriteriaLine, SparnaturalQueryIfc } from "sparnatural"; 
 import { I18nForm } from "../../settings/I18nForm";
   
 
@@ -65,7 +60,7 @@ class OptionalCriteriaManager {
    */
 
   public updateOptionVisibility() {
-    const hasValues = this.queryLine.values && this.queryLine.values.length > 0;
+    const hasValues = this.queryLine.criterias && this.queryLine.criterias.length > 0;
 
     // Ensure elements exist before updating them
     if (!this.anydiv || !this.notExistDiv) {
@@ -313,16 +308,16 @@ class OptionalCriteriaManager {
         console.log("Widget value change detected.");
         console.log("Event detail:", e.detail);
 
-        // Vérifie si e.detail.value est défini avant de continuer
-        if (!e.detail || !e.detail.value) {
-          console.error("e.detail.value is undefined or invalid:", e.detail);
+        // Vérifie si e.detail.criteria est défini avant de continuer
+        if (!e.detail || !e.detail.criteria) {
+          console.error("e.detail.criteria is undefined or invalid:", e.detail);
           return;
         }
 
         // Normalise les nouvelles valeurs en tableau
-        const newValues = Array.isArray(e.detail.value)
-          ? e.detail.value
-          : [e.detail.value];
+        const newValues = Array.isArray(e.detail)
+          ? e.detail
+          : [e.detail];
 
         console.log("New values to inject:", newValues);
 
@@ -338,7 +333,7 @@ class OptionalCriteriaManager {
         }
 
         // Récupère les valeurs existantes (ou initialise un tableau vide)
-        const existingValues = this.queryLine.values || [];
+        const existingValues = this.queryLine.criterias || [];
         console.log("Existing values:", existingValues);
 
         // Fusionne les valeurs en évitant les doublons
@@ -352,11 +347,11 @@ class OptionalCriteriaManager {
           ...validNewValues,
         ];
 
-        // Met à jour les valeurs dans `this.queryLine.values`
-        this.queryLine.values = mergedValues;
+        // Met à jour les valeurs dans `this.queryLine.criterias`
+        this.queryLine.criterias = mergedValues;
 
         // Affiche les valeurs fusionnées pour débogage
-        console.log("Updated queryLine.values:", this.queryLine.values);
+        console.log("Updated queryLine.criterias:", this.queryLine.criterias);
 
         // Mets à jour la visibilité des options si nécessaire
         if (this.anydiv && this.notExistDiv) {

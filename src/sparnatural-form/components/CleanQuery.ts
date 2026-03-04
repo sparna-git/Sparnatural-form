@@ -74,7 +74,7 @@ class CleanQuery {
     return branches
       .filter((branch) => {
         const variable = branch.line?.o;
-        const hasValues = branch.line?.values?.length > 0;
+        const hasValues = branch.line?.criterias?.length > 0;
         const isOptional = branch.optional || false;
         const parentOptional = this.isParentOptional(branch.line?.o);
 

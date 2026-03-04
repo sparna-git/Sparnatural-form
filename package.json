@@ -31,6 +31,7 @@
     "@statoscope/webpack-plugin": "^5.29.0",
     "@types/awesomplete": "^1.1.16",
     "@types/jquery": "^3.5.32",
+    "@types/js-yaml": "^4.0.9",
     "@types/leaflet": "^1.9.16",
     "@types/n3": "^1.21.1",
     "@types/select2": "^4.0.63",
@@ -52,8 +53,10 @@
   },
   "dependencies": {
     "@chenfengyuan/datepicker": "^1.0.10",
+    "js-yaml": "^4.1.1",
     "querystring-es3": "^0.2.1",
-    "sparnatural": "^11.1.0",
+    "rdf-shacl-commons": "^0.3.3",
+    "sparnatural": "file:../sparnatural/sparnatural-12.1.0.tgz",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.4",
     "util": "^0.12.5"

@@ -167,6 +167,7 @@ class FormField {
     const selectedValues = new Set<any>();
     const updateValueDisplay = () => {
       valueDisplay.innerHTML = "";
+
       selectedValues.forEach((val) => {
         const valueContainer = document.createElement("div");
         valueContainer.classList.add("selected-value-container");
@@ -179,7 +180,7 @@ class FormField {
           selectedValues.delete(val);
           console.log(selectedValues);
           updateValueDisplay();
-          queryLine.values = Array.from(selectedValues);
+          queryLine.criterias = Array.from(selectedValues);
           console.log("QUERYLINE ", queryLine);
 
           // Vide les champs input du widget
@@ -216,14 +217,14 @@ class FormField {
       // Handle different cases for e.detail
       if (Array.isArray(e.detail)) {
         // Case: e.detail is an array
-        valueToInject = e.detail.map((item: any) => item.value);
+        valueToInject = e.detail.map((item: any) => item);
         console.log("here");
         typeof valueToInject[0] === "string";
-      } else if (e.detail.value) {
+      } else if (e.detail.criteria) {
         // Case: e.detail contains a single value or a wrapped object
-        valueToInject = Array.isArray(e.detail.value)
-          ? e.detail.value
-          : [e.detail.value];
+        valueToInject = Array.isArray(e.detail)
+          ? e.detail
+          : [e.detail];
       } else {
         console.warn("Unexpected e.detail format:", e.detail);
         return; // Exit early if the format is not recognized
@@ -264,7 +265,7 @@ class FormField {
           selectedValues.add(val);
 
           updateValueDisplay();
-          queryLine.values = Array.from(selectedValues);
+          queryLine.criterias = Array.from(selectedValues);
 
           formFieldDiv.dispatchEvent(
             new CustomEvent("valueAdded", {
