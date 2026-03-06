@@ -116,7 +116,8 @@
         "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
         "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
         "criterias": []
-      }
+      },
+      "optional": true
     },
     {
       "line": {
@@ -136,7 +137,8 @@
             "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice",
             "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
             "criterias": []
-          }
+          },
+          "optional": true
         }
       ]
     },

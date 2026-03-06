@@ -80,10 +80,75 @@ sparnatural-form {
     margin-right: 10px;
     font-weight: normal;
     color: var(--default-text-color);
+
+    // Render inline SVG from map widget properly
+    svg {
+      display: inline-block;
+      vertical-align: middle;
+      background-color: var(--secondary-color-important, #3388ff);
+      border-radius: 3px;
+      margin-right: 4px;
+
+      polygon {
+        fill: #ffffff;
+      }
+    }
+
+    span {
+      display: inline;
+      vertical-align: middle;
+    }
+  }
+
+  // Map widget adjustments inside the form
+  .map-widget {
+    flex-direction: column;
+
+    .button-add {
+      cursor: pointer;
+    }
+
+    // Reset leaflet control sizing inside the form context
+    .leaflet-bar a {
+      width: 30px !important;
+      height: 30px !important;
+      line-height: 30px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-sizing: content-box;
+    }
+
+    // Remove extra padding around Geoman toolbar buttons
+    .leaflet-pm-toolbar .leaflet-buttons-control-button {
+      padding: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    // Reduce Geoman icon size inside buttons
+    .leaflet-pm-toolbar .control-icon {
+      width: 20px !important;
+      height: 20px !important;
+    }
+
+    // Reset .button-container inside map (Geoman uses this class)
+    .leaflet-pm-toolbar .button-container {
+      display: block !important;
+      justify-content: initial !important;
+      margin-top: 0 !important;
+    }
+
+    // Reduce map height
+    .map-wrapper {
+      height: 300px;
+    }
   }
 
   // Container for the search button to control its position
-  .button-container {
+  // Exclude Geoman's .button-container inside maps
+  > .button-container,
+  .sparnatural-form-container > .button-container {
     display: flex;
     justify-content: flex-end;
     margin-top: 20px;

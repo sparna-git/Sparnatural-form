@@ -1,17 +1,10 @@
 import { WidgetFactory } from "sparnatural";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import { UnselectBtn } from "sparnatural";
-import {
-  Branch,
-  CriteriaLine,
-  SparnaturalQueryIfc,
-} from "sparnatural";
+import { Branch, CriteriaLine, SparnaturalQueryIfc } from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import OptionalCriteriaManager from "./optionalCriteria/OptionalCriteriaManager";
-import {
-  AbstractWidget,
-  ValueRepetition,
-} from "sparnatural";
+import { AbstractWidget, ValueRepetition, I18n } from "sparnatural";
 import { Binding } from "../FormStructure";
 import tippy from "tippy.js";
 import { I18nForm } from "../settings/I18nForm";
@@ -29,7 +22,7 @@ class FormField {
     formContainer: HTMLElement,
     specProvider: ISparnaturalSpecification,
     query: SparnaturalQueryIfc,
-    widgetFactory: WidgetFactory
+    widgetFactory: WidgetFactory,
   ) {
     this.binding = binding;
     this.formContainer = formContainer;
@@ -76,7 +69,7 @@ class FormField {
         variable,
         queryLine,
         widget,
-        formFieldDiv
+        formFieldDiv,
       );
 
       // Add options like "An'y value" and "Not Exist"
@@ -109,7 +102,7 @@ class FormField {
     if (helpText) {
       helpIcon.setAttribute(
         "data-tippy-content",
-        helpText.replace(/"/g, "&quot;")
+        helpText.replace(/"/g, "&quot;"),
       );
       label.appendChild(helpIcon);
     }
@@ -119,7 +112,7 @@ class FormField {
   //method to find the line in the query corresponding to the variable
   private findInBranches(
     branches: Branch[],
-    variable: string
+    variable: string,
   ): CriteriaLine | null {
     for (const branch of branches) {
       if (branch.line.o === variable) return branch.line;
@@ -142,7 +135,7 @@ class FormField {
     const widget = this.widgetFactory.buildWidget(
       { variable: queryLine.s, type: specEntity.getId() },
       { variable: "predicate", type: connectingProperty.getId() },
-      { variable: queryLine.o, type: object }
+      { variable: queryLine.o, type: object },
     );
     widget.render();
     // console.log("widget", widget);
@@ -154,7 +147,7 @@ class FormField {
     formFieldDiv: HTMLElement,
     queryLine: CriteriaLine,
     widget: AbstractWidget,
-    variable: string
+    variable: string,
   ): void {
     const valueDisplay = document.createElement("div");
     valueDisplay.setAttribute("id", `selected-value-${variable}`);
@@ -164,6 +157,23 @@ class FormField {
 
     // Add a set to store selected values and a method to update the display
 
+    // Save the original map open callback for MapWidget reset
+    const mapOpenCallback = (widget as any).renderMapValueBtn?.callBack;
+    const isMapWidget = widget.html[0].classList.contains("map-widget");
+
+    // Helper to reset the MapWidget button back to "Ouvrir la carte" / "Open Map"
+    const resetMapButton = () => {
+      if (!isMapWidget) return;
+      const mapBtn = (widget as any).renderMapValueBtn;
+      if (mapBtn && mapOpenCallback) {
+        mapBtn.callBack = mapOpenCallback;
+        const buttonEl = mapBtn.html[0]?.querySelector(".button-add");
+        if (buttonEl) {
+          buttonEl.textContent = I18n.labels.MapWidgetOpenMap;
+        }
+      }
+    };
+
     const selectedValues = new Set<any>();
     const updateValueDisplay = () => {
       valueDisplay.innerHTML = "";
@@ -172,7 +182,7 @@ class FormField {
         const valueContainer = document.createElement("div");
         valueContainer.classList.add("selected-value-container");
         const valueLabel = document.createElement("span");
-        valueLabel.innerText = `${val.label}`;
+        valueLabel.innerHTML = `${val.label}`;
         valueLabel.classList.add("selected-value-label");
         valueContainer.appendChild(valueLabel);
 
@@ -183,6 +193,14 @@ class FormField {
           queryLine.criterias = Array.from(selectedValues);
           console.log("QUERYLINE ", queryLine);
 
+          // Clear widget's internal values (needed for MapWidget)
+          if ((widget as any).widgetValues) {
+            (widget as any).widgetValues = [];
+          }
+
+          // Reset MapWidget button to "Open Map" state
+          resetMapButton();
+
           // Vide les champs input du widget
           const inputs = widget.html[0].querySelectorAll("input");
           inputs.forEach((input) => {
@@ -192,7 +210,7 @@ class FormField {
             new CustomEvent("valueRemoved", {
               bubbles: true,
               detail: { value: val, variable: variable },
-            })
+            }),
           );
 
           // Update options visibility
@@ -222,9 +240,7 @@ class FormField {
         typeof valueToInject[0] === "string";
       } else if (e.detail.criteria) {
         // Case: e.detail contains a single value or a wrapped object
-        valueToInject = Array.isArray(e.detail)
-          ? e.detail
-          : [e.detail];
+        valueToInject = Array.isArray(e.detail) ? e.detail : [e.detail];
       } else {
         console.warn("Unexpected e.detail format:", e.detail);
         return; // Exit early if the format is not recognized
@@ -233,13 +249,27 @@ class FormField {
       console.log("valueToInject", valueToInject);
 
       valueToInject.forEach((val: any) => {
+        // Check if same value already exists (skip silently, e.g. map close re-fires)
+        const existingValue = Array.from(selectedValues).find(
+          (existingVal: any) => existingVal.label === val.label,
+        );
+        if (existingValue) {
+          // Close the map wrapper if present (map close re-fire case)
+          const mapWrapper = widget.html[0].querySelector(".map-wrapper");
+          if (mapWrapper) {
+            mapWrapper.remove();
+          }
+          resetMapButton();
+          return; // Same value, skip
+        }
+
         const isSingleValue = widget.valueRepetition === ValueRepetition.SINGLE;
 
         // Si SINGLE et une valeur déjà existante → Afficher warning
         if (isSingleValue && selectedValues.size > 0) {
           // Créer un message d'alerte temporaire
           let warningMsg = formFieldDiv.querySelector(
-            ".single-value-warning"
+            ".single-value-warning",
           ) as HTMLElement;
           if (!warningMsg) {
             warningMsg = document.createElement("div");
@@ -257,26 +287,27 @@ class FormField {
           return; // Ne pas ajouter la nouvelle valeur
         }
 
-        const existingValue = Array.from(selectedValues).find(
-          (existingVal: any) => existingVal.label === val.label
+        selectedValues.add(val);
+
+        updateValueDisplay();
+        queryLine.criterias = Array.from(selectedValues);
+
+        // Close the map wrapper after value is accepted
+        const mapWrapper = widget.html[0].querySelector(".map-wrapper");
+        if (mapWrapper) {
+          mapWrapper.remove();
+        }
+        resetMapButton();
+
+        formFieldDiv.dispatchEvent(
+          new CustomEvent("valueAdded", {
+            bubbles: true,
+            detail: { value: val, variable: variable },
+          }),
         );
 
-        if (!existingValue) {
-          selectedValues.add(val);
-
-          updateValueDisplay();
-          queryLine.criterias = Array.from(selectedValues);
-
-          formFieldDiv.dispatchEvent(
-            new CustomEvent("valueAdded", {
-              bubbles: true,
-              detail: { value: val, variable: variable },
-            })
-          );
-
-          if (this.optionalCriteriaManager) {
-            this.optionalCriteriaManager.updateOptionVisibility();
-          }
+        if (this.optionalCriteriaManager) {
+          this.optionalCriteriaManager.updateOptionVisibility();
         }
       });
     });
@@ -287,7 +318,7 @@ class FormField {
       variable,
       queryLine,
       widget,
-      formFieldDiv
+      formFieldDiv,
     );
   }
 }

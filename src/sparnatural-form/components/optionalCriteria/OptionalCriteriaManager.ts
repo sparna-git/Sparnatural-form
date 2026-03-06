@@ -1,7 +1,10 @@
-import { AbstractWidget, Branch, CriteriaLine, SparnaturalQueryIfc } from "sparnatural"; 
+import {
+  AbstractWidget,
+  Branch,
+  CriteriaLine,
+  SparnaturalQueryIfc,
+} from "sparnatural";
 import { I18nForm } from "../../settings/I18nForm";
-  
-
 
 class OptionalCriteriaManager {
   private initialOptionalStates: { [variable: string]: any } = {};
@@ -18,7 +21,7 @@ class OptionalCriteriaManager {
     private variable: string, // The variable associated with this field
     queryline: CriteriaLine, // The specific query line for this field
     private widget: AbstractWidget, // The widget associated with this field
-    private formFieldDiv: HTMLElement // The container for the form field
+    private formFieldDiv: HTMLElement, // The container for the form field
   ) {
     this.queryLine = queryline;
     this.saveInitialOptionalState(this.query.branches); // Save initial states for optional flags
@@ -30,7 +33,7 @@ class OptionalCriteriaManager {
    */
   private saveInitialOptionalState(
     queryBranches: Branch[],
-    parentOptionalChain: boolean[] = []
+    parentOptionalChain: boolean[] = [],
   ) {
     const saveState = (branches: Branch[], currentParentChain: boolean[]) => {
       branches.forEach((branch: Branch) => {
@@ -60,12 +63,13 @@ class OptionalCriteriaManager {
    */
 
   public updateOptionVisibility() {
-    const hasValues = this.queryLine.criterias && this.queryLine.criterias.length > 0;
+    const hasValues =
+      this.queryLine.criterias && this.queryLine.criterias.length > 0;
 
     // Ensure elements exist before updating them
     if (!this.anydiv || !this.notExistDiv) {
       console.warn(
-        `Optional elements not created for variable: ${this.variable}`
+        `Optional elements not created for variable: ${this.variable}`,
       );
       return; // Exit if no options are created
     }
@@ -196,7 +200,7 @@ class OptionalCriteriaManager {
           new CustomEvent("anyValueSelected", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       } else {
         this.resetToDefaultValueForWidget(this.variable);
@@ -214,7 +218,7 @@ class OptionalCriteriaManager {
           new CustomEvent("removeAnyValueOption", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       }
     });
@@ -253,7 +257,7 @@ class OptionalCriteriaManager {
           new CustomEvent("notExist", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       } else {
         this.removeNotExistsForWidget(this.variable);
@@ -271,7 +275,7 @@ class OptionalCriteriaManager {
           new CustomEvent("removeNotExistOption", {
             bubbles: true,
             detail: { variable: this.variable },
-          })
+          }),
         );
       }
     });
@@ -294,7 +298,7 @@ class OptionalCriteriaManager {
    */
   private removePill(type: string) {
     const existingPill = this.formFieldDiv.querySelector(
-      `.option-pill.${type}`
+      `.option-pill.${type}`,
     );
     if (existingPill) {
       existingPill.remove();
@@ -315,15 +319,13 @@ class OptionalCriteriaManager {
         }
 
         // Normalise les nouvelles valeurs en tableau
-        const newValues = Array.isArray(e.detail)
-          ? e.detail
-          : [e.detail];
+        const newValues = Array.isArray(e.detail) ? e.detail : [e.detail];
 
         console.log("New values to inject:", newValues);
 
         // Vérifie si newValues contient des objets valides
         const validNewValues = newValues.filter(
-          (val: any) => val && val.label !== undefined
+          (val: any) => val && val.label !== undefined,
         );
         console.log("Valid new values:", validNewValues);
 
@@ -341,8 +343,8 @@ class OptionalCriteriaManager {
           ...existingValues.filter(
             (existing: { label: string }) =>
               !validNewValues.some(
-                (newVal: { label: string }) => newVal.label === existing.label
-              )
+                (newVal: { label: string }) => newVal.label === existing.label,
+              ),
           ),
           ...validNewValues,
         ];
@@ -357,7 +359,7 @@ class OptionalCriteriaManager {
         if (this.anydiv && this.notExistDiv) {
           this.updateOptionVisibility();
         }
-      }
+      },
     );
   }
 
@@ -386,23 +388,23 @@ class OptionalCriteriaManager {
     console.log(`Setting "Any value" for variable: ${variable}`);
     const adjustOptionalFlags = (
       branches: Branch[],
-      targetVariable: string
+      targetVariable: string,
     ) => {
       branches.forEach((branch: Branch) => {
         const formVariable = branch.line.o;
         if (formVariable === targetVariable && branch.optional === true) {
           console.log(
-            `Removing "optional: true" for variable: ${targetVariable}`
+            `Removing "optional: true" for variable: ${targetVariable}`,
           );
           delete branch.optional;
         }
         if (branch.children && branch.children.length > 0) {
           const childHasTargetVariable = branch.children.some(
-            (child: Branch) => child.line.o === targetVariable
+            (child: Branch) => child.line.o === targetVariable,
           );
           if (childHasTargetVariable && branch.optional === true) {
             console.log(
-              `Removing "optional: true" for parent of variable: ${targetVariable}`
+              `Removing "optional: true" for parent of variable: ${targetVariable}`,
             );
             delete branch.optional;
           }
@@ -418,7 +420,7 @@ class OptionalCriteriaManager {
 
     const restoreInitialState = (
       branches: Branch[],
-      targetVariable: string
+      targetVariable: string,
     ) => {
       branches.forEach((branch: Branch) => {
         if (branch.line && branch.line.o === targetVariable) {
@@ -428,7 +430,7 @@ class OptionalCriteriaManager {
             branch.notExists = initialState.notExists;
             this.restoreParentOptionalChain(
               branch,
-              initialState.parentOptionalChain
+              initialState.parentOptionalChain,
             );
           }
         }
@@ -443,7 +445,7 @@ class OptionalCriteriaManager {
 
   private restoreParentOptionalChain(
     branch: Branch,
-    parentOptionalChain: boolean[]
+    parentOptionalChain: boolean[],
   ) {
     let currentBranch = branch;
     for (let i = parentOptionalChain.length - 1; i >= 0; i--) {
@@ -452,7 +454,7 @@ class OptionalCriteriaManager {
         currentBranch.optional = parentOptional;
         currentBranch = this.findParentBranch(
           this.query.branches,
-          currentBranch.line.o
+          currentBranch.line.o,
         );
       }
     }
@@ -460,7 +462,7 @@ class OptionalCriteriaManager {
 
   private findParentBranch(
     branches: Branch[],
-    childVariable: string
+    childVariable: string,
   ): Branch | null {
     for (const branch of branches) {
       if (
@@ -472,7 +474,7 @@ class OptionalCriteriaManager {
       if (branch.children && branch.children.length > 0) {
         const foundParent = this.findParentBranch(
           branch.children,
-          childVariable
+          childVariable,
         );
         if (foundParent) {
           return foundParent;
@@ -489,12 +491,12 @@ class OptionalCriteriaManager {
       branches.forEach((branch: Branch) => {
         if (branch.line && branch.line.o === targetVariable) {
           console.log(
-            `Adding "notExists: true" for variable: ${targetVariable}`
+            `Adding "notExists: true" for variable: ${targetVariable}`,
           );
           branch.notExists = true;
           if (branch.optional === true) {
             console.log(
-              `Removing "optional: true" for variable: ${targetVariable}`
+              `Removing "optional: true" for variable: ${targetVariable}`,
             );
             delete branch.optional;
           }
@@ -507,15 +509,17 @@ class OptionalCriteriaManager {
 
     const adjustParentOptionalFlags = (
       branches: Branch[],
-      targetVariable: string
+      targetVariable: string,
     ) => {
       branches.forEach((branch: Branch) => {
-        const childHasTargetVariable = branch.children.some(
-          (child: Branch) => child.line.o === targetVariable
-        );
+        const childHasTargetVariable =
+          branch.children &&
+          branch.children.some(
+            (child: Branch) => child.line.o === targetVariable,
+          );
         if (childHasTargetVariable && branch.optional === true) {
           console.log(
-            `Removing "optional: true" for parent of variable: ${targetVariable}`
+            `Removing "optional: true" for parent of variable: ${targetVariable}`,
           );
           delete branch.optional;
         }
@@ -534,7 +538,7 @@ class OptionalCriteriaManager {
 
     const removeNotExistsFlag = (
       branches: Branch[],
-      targetVariable: string
+      targetVariable: string,
     ) => {
       branches.forEach((branch: Branch) => {
         if (branch.line && branch.line.o === targetVariable) {
@@ -544,7 +548,7 @@ class OptionalCriteriaManager {
             branch.optional = initialState.optional;
             this.restoreParentOptionalChain(
               branch,
-              initialState.parentOptionalChain
+              initialState.parentOptionalChain,
             );
           }
         }
