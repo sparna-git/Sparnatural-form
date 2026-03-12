@@ -83,6 +83,22 @@ class CleanQuery {
         const existsInQueryVariables =
           variablesUsedInResultSet.find((v) => v === variable) !== undefined;
 
+        // Check if any descendant variable is selected in the result set.
+        const hasSelectedDescendant = (b: Branch | null): boolean => {
+          if (!b || !b.children || b.children.length === 0) return false;
+          for (const child of b.children) {
+            const childVar = child.line?.o;
+            if (
+              childVar &&
+              variablesUsedInResultSet.find((v) => v === childVar) !== undefined
+            ) {
+              return true;
+            }
+            if (hasSelectedDescendant(child)) return true;
+          }
+          return false;
+        };
+
         // remove the branches with o :
         //   - which haven't any values
         //   - don't exist in query.variables
@@ -95,10 +111,14 @@ class CleanQuery {
         //   - but then it is removed for onscreen display
         //   - so we should remove it anyway
         const shouldRemove =
-          // this.variablesUsedInFormConfig.includes(variable) && // La variable est dans les form variables
-          !existsInQueryVariables && // La variable n'existe pas dans les variables du SELECT la requête
-          !hasValues && // Aucune valeur pour cette branche
-          (isOptional || parentOptional); // La branche ou son parent est optionnel
+          // La variable n'existe pas dans les variables du SELECT la requête
+          !existsInQueryVariables &&
+          // et aucune de ses descendants n'est dans le SELECT
+          !hasSelectedDescendant(branch) &&
+          // et elle n'a pas de valeurs
+          !hasValues &&
+          // et la branche ou son parent est optionnel
+          (isOptional || parentOptional);
         return !shouldRemove;
       })
       .map((branch) => ({

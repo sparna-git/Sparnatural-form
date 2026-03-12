@@ -23,7 +23,7 @@
         "o": "Museum_2",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
-        "values": []
+        "criterias": []
       },
       "children": [
         {
@@ -33,7 +33,7 @@
             "o": "Country_4",
             "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Museum",
             "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Country",
-            "values": []
+            "criterias": []
           },
           "children": [],
           "optional": true
@@ -48,7 +48,7 @@
         "o": "Person_10",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Person",
-        "values": []
+        "criterias": []
       },
       "children": [],
       "optional": true
@@ -60,7 +60,7 @@
         "o": "Image_8",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Image",
-        "values": []
+        "criterias": []
       },
       "children": [],
       "optional": true
@@ -72,7 +72,7 @@
         "o": "Text_10",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Text",
-        "values": []
+        "criterias": []
       },
       "children": [],
       "optional": true
@@ -84,7 +84,7 @@
         "o": "Date_12",
         "sType": "https://data.mydomain.com/ontologies/sparnatural-config/Artwork",
         "oType": "https://data.mydomain.com/ontologies/sparnatural-config/Date",
-        "values": []
+        "criterias": []
       },
       "children": []
     }
