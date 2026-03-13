@@ -2,6 +2,6 @@
   "Search": "Chercher",
   "Reset": "Réinitialiser",
   "messageSingleValue": "Vous devez supprimer la valeur précédente avant d'en ajouter une nouvelle.",
-  "AnyValue": "Toute valeur",
-  "NotExist": "N'existe pas"
+  "AnyValue": "Toute valeur connue",
+  "NotExist": "Valeur inconnue"
 }

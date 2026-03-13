@@ -56,7 +56,7 @@
     "js-yaml": "^4.1.1",
     "querystring-es3": "^0.2.1",
     "rdf-shacl-commons": "^0.3.3",
-    "sparnatural": "file:../sparnatural/sparnatural-12.1.0.tgz",
+    "sparnatural": "^12.1.0",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.4",
     "util": "^0.12.5"
