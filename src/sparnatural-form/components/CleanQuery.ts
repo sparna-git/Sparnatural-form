@@ -39,7 +39,7 @@ class CleanQuery {
     cleanQueryResult = this.removeUnusedVariablesFromSelect(
       cleanQueryResult,
       resultType,
-      this.formConfig
+      this.formConfig,
     );
     console.log("Type", resultType);
 
@@ -54,7 +54,7 @@ class CleanQuery {
 
     cleanQueryResult.branches = this.cleanBranches(
       cleanQueryResult.branches,
-      variablesUsedInResultSet
+      variablesUsedInResultSet,
     );
     // } else {
     //cleanQueryResult = this.query;
@@ -69,65 +69,38 @@ class CleanQuery {
 
   private cleanBranches(
     branches: Branch[],
-    variablesUsedInResultSet: string[]
+    variablesUsedInResultSet: string[],
   ): Branch[] {
     return branches
+      .map((branch) => ({
+        ...branch,
+        // D'abord, nettoyer récursivement les enfants (bottom-up)
+        children: this.cleanBranches(
+          branch.children || [],
+          variablesUsedInResultSet,
+        ),
+      }))
       .filter((branch) => {
         const variable = branch.line?.o;
-        const hasValues = branch.line?.criterias?.length > 0;
+        const hasValues = this.branchHasValues(branch);
         const isOptional = branch.optional || false;
         const parentOptional = this.isParentOptional(branch.line?.o);
 
-        // Vérifier si la variable existe dans `queryVariables`
-        // const existsInQueryVariables = variablesUsedInResultSet.includes(variable);
         const existsInQueryVariables =
           variablesUsedInResultSet.find((v) => v === variable) !== undefined;
 
-        // Check if any descendant variable is selected in the result set.
-        const hasSelectedDescendant = (b: Branch | null): boolean => {
-          if (!b || !b.children || b.children.length === 0) return false;
-          for (const child of b.children) {
-            const childVar = child.line?.o;
-            if (
-              childVar &&
-              variablesUsedInResultSet.find((v) => v === childVar) !== undefined
-            ) {
-              return true;
-            }
-            if (hasSelectedDescendant(child)) return true;
-          }
-          return false;
-        };
+        // Après le nettoyage bottom-up, on vérifie si la branche a encore des enfants
+        const hasRemainingChildren =
+          branch.children && branch.children.length > 0;
 
-        // remove the branches with o :
-        //   - which haven't any values
-        //   - don't exist in query.variables
-        //   - is optional or his father is optional
-        //
-        // note : we don't check that the variable is in the form variables, because what could happen is:
-        //   - the variable is optional
-        //   - it is not in the form variables (only here to be selected as a result variable)
-        //   - it is selected in the query
-        //   - but then it is removed for onscreen display
-        //   - so we should remove it anyway
         const shouldRemove =
-          // La variable n'existe pas dans les variables du SELECT la requête
           !existsInQueryVariables &&
-          // et aucune de ses descendants n'est dans le SELECT
-          !hasSelectedDescendant(branch) &&
-          // et elle n'a pas de valeurs
+          !hasRemainingChildren && // plus besoin de hasSelectedDescendant, les enfants sont déjà nettoyés
           !hasValues &&
-          // et la branche ou son parent est optionnel
           (isOptional || parentOptional);
+
         return !shouldRemove;
-      })
-      .map((branch) => ({
-        ...branch,
-        children: this.cleanBranches(
-          branch.children || [],
-          variablesUsedInResultSet
-        ), // Nettoyer récursivement les enfants
-      }));
+      });
   }
 
   /**
@@ -139,7 +112,7 @@ class CleanQuery {
       return Array.isArray(theQuery.variables)
         ? // either this is a simple variable, or this is an aggregated variable
           theQuery.variables.map((v) =>
-            "value" in v ? v.value : v.expression.expression.value
+            "value" in v ? v.value : v.expression.expression.value,
           )
         : [];
     }
@@ -167,6 +140,26 @@ class CleanQuery {
   }
 
   /**
+   * Vérifie récursivement si une branche ou l'un de ses descendants possède des criterias (valeurs).
+   */
+  private branchHasValues(branch: Branch | null): boolean {
+    if (!branch) return false;
+    if (
+      branch.line &&
+      Array.isArray(branch.line.criterias) &&
+      branch.line.criterias.length > 0
+    ) {
+      return true;
+    }
+    if (branch.children && branch.children.length > 0) {
+      for (const child of branch.children) {
+        if (this.branchHasValues(child)) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    *
    * @param query The query from which to remove the selected variables
    * @param resultType The type of expected result. Depending on the type of result, only some columns are kept in the result set
@@ -175,7 +168,7 @@ class CleanQuery {
   private removeUnusedVariablesFromSelect(
     query: SparnaturalQueryIfc,
     resultType: "onscreen" | "export",
-    formConfig: Form
+    formConfig: Form,
   ): SparnaturalQueryIfc {
     if (resultType == "onscreen") {
       query.variables = query.variables.filter((v) => {

@@ -27,7 +27,39 @@ class OptionalCriteriaManager {
     this.saveInitialOptionalState(this.query.branches); // Save initial states for optional flags
     this.createOptionContainer(); // Create the UI for "Any value" and "Not Exist" options
     this.attachValueChangeListener(); // Attach listener for dynamic updates
+    // Listen to valueAdded/valueRemoved events dispatched by FormField
+    this.formFieldDiv.addEventListener("valueAdded", (e: CustomEvent) => {
+      // when a value is added from outside, ensure optional flags cleared
+      const branch = this.findBranchByVariable(
+        this.query.branches,
+        this.variable,
+      );
+      if (branch) {
+        this.clearOptionalChain(this.variable);
+      }
+      this.updateOptionVisibility();
+    });
+    this.formFieldDiv.addEventListener("valueRemoved", (e: CustomEvent) => {
+      // when a value is removed, if no values left restore initial state
+      // BUT only if we're not in notExists or anyValue mode
+      const branch = this.findBranchByVariable(
+        this.query.branches,
+        this.variable,
+      );
+      const isNotExistsActive = branch?.notExists === true;
+      const isAnyValueActive = this.anyValueToggle?.checked === true;
+
+      if (
+        !isNotExistsActive &&
+        !isAnyValueActive &&
+        (!this.queryLine.criterias || this.queryLine.criterias.length === 0)
+      ) {
+        this.resetToDefaultValueForWidget(this.variable);
+      }
+      this.updateOptionVisibility();
+    });
   }
+
   /**
    * Saves the initial state of optional and notExist flags for each branch.
    */
@@ -61,7 +93,6 @@ class OptionalCriteriaManager {
   /**
    * Updates the visibility and enabled state of "Any value" and "Not Exist" options.
    */
-
   public updateOptionVisibility() {
     const hasValues =
       this.queryLine.criterias && this.queryLine.criterias.length > 0;
@@ -101,10 +132,7 @@ class OptionalCriteriaManager {
 
   /**
    * Creates the UI container for "Any value" and "Not Exist" options.
-   *
-   *
    */
-
   private createOptionContainer() {
     // Check if an option container already exists
     const existingOptionContainer =
@@ -114,15 +142,20 @@ class OptionalCriteriaManager {
       this.formFieldDiv.removeChild(existingOptionContainer);
     }
 
-    // Find the branch and its parent
+    // Find the branch
     const branch = this.findBranch(this.query.branches);
-    const branchParent = this.findBranchParent(this.query.branches);
 
-    // Check if either the branch or its parent is optional
-    const shouldCreateOptions = branch?.optional || branchParent?.optional;
+    // Log branch for debugging
+    console.log(`createOptionContainer: variable=${this.variable}`);
+    console.log(`  branch:`, branch);
+
+    // Check if either the branch itself is optional, or any ancestor is optional
+    const shouldCreateOptions =
+      branch?.optional || this.hasOptionalAncestor(this.variable);
+    console.log(`  shouldCreateOptions=${shouldCreateOptions}`);
 
     if (!shouldCreateOptions) {
-      // If neither the branch nor its parent is optional, skip creating options
+      // If neither the branch nor any ancestor is optional, skip creating options
       console.log(`Skipping option creation for variable: ${this.variable}`);
       return;
     }
@@ -165,9 +198,28 @@ class OptionalCriteriaManager {
     this.attachToggleListeners();
   }
 
+  /**
+   * Remonte toute la chaîne des ancêtres pour vérifier si au moins un est optional.
+   */
+  private hasOptionalAncestor(variable: string): boolean {
+    let current = variable;
+    let parent = this.findParentBranch(this.query.branches, current);
+    while (parent) {
+      if (parent.optional) {
+        return true;
+      }
+      current = parent.line.o;
+      parent = this.findParentBranch(this.query.branches, current);
+    }
+    return false;
+  }
+
   private attachToggleListeners() {
     // Handle "Any Value" toggle changes
     this.anyValueToggle.addEventListener("change", () => {
+      console.log(
+        `anyValueToggle change for ${this.variable}: checked=${this.anyValueToggle.checked}`,
+      );
       if (this.anyValueToggle.checked) {
         // Suppression du conteneur d'options
         this.removeOptionContainer();
@@ -225,6 +277,9 @@ class OptionalCriteriaManager {
 
     // Handle "Not Exist" toggle changes
     this.notExistToggle.addEventListener("change", () => {
+      console.log(
+        `notExistToggle change for ${this.variable}: checked=${this.notExistToggle.checked}`,
+      );
       if (this.notExistToggle.checked) {
         // Suppression du conteneur d'options
         this.removeOptionContainer();
@@ -352,8 +407,42 @@ class OptionalCriteriaManager {
         // Met à jour les valeurs dans `this.queryLine.criterias`
         this.queryLine.criterias = mergedValues;
 
+        // Dispatch an event to notify that values were added for this variable
+        this.formFieldDiv.dispatchEvent(
+          new CustomEvent("valueAdded", {
+            bubbles: true,
+            detail: { variable: this.variable, values: validNewValues },
+          }),
+        );
+
         // Affiche les valeurs fusionnées pour débogage
         console.log("Updated queryLine.criterias:", this.queryLine.criterias);
+
+        // If we now have values, ensure the branch and its parents are not optional
+        if (this.queryLine.criterias && this.queryLine.criterias.length > 0) {
+          this.clearOptionalChain(this.variable);
+        } else {
+          // if no values left, restore initial optional state
+          // BUT only if not in notExists or anyValue mode
+          const currentBranch = this.findBranchByVariable(
+            this.query.branches,
+            this.variable,
+          );
+          const isNotExistsActive = currentBranch?.notExists === true;
+          const isAnyValueActive = this.anyValueToggle?.checked === true;
+
+          if (!isNotExistsActive && !isAnyValueActive) {
+            this.resetToDefaultValueForWidget(this.variable);
+          }
+
+          // Notify listeners that values were removed for this variable
+          this.formFieldDiv.dispatchEvent(
+            new CustomEvent("valueRemoved", {
+              bubbles: true,
+              detail: { variable: this.variable },
+            }),
+          );
+        }
 
         // Mets à jour la visibilité des options si nécessaire
         if (this.anydiv && this.notExistDiv) {
@@ -361,6 +450,31 @@ class OptionalCriteriaManager {
         }
       },
     );
+  }
+
+  private findBranchByVariable(
+    branches: Branch[],
+    variable: string,
+  ): Branch | null {
+    for (const branch of branches) {
+      if (branch.line && branch.line.o === variable) return branch;
+      if (branch.children && branch.children.length > 0) {
+        const result = this.findBranchByVariable(branch.children, variable);
+        if (result) return result;
+      }
+    }
+    return null;
+  }
+
+  private clearOptionalChain(variable: string) {
+    const branch = this.findBranchByVariable(this.query.branches, variable);
+    if (!branch) return;
+    branch.optional = false;
+    let parent = this.findParentBranch(this.query.branches, branch.line.o);
+    while (parent) {
+      parent.optional = false;
+      parent = this.findParentBranch(this.query.branches, parent.line.o);
+    }
   }
 
   private findBranch(branches: Branch[]): Branch | null {
@@ -384,37 +498,36 @@ class OptionalCriteriaManager {
     return false;
   }
 
+  /**
+   * Sets "Any value" for a widget variable.
+   * Removes optional flag on the branch itself and on ALL ancestors up to the root.
+   */
   public setAnyValueForWidget(variable: string) {
     console.log(`Setting "Any value" for variable: ${variable}`);
-    const adjustOptionalFlags = (
-      branches: Branch[],
-      targetVariable: string,
-    ) => {
-      branches.forEach((branch: Branch) => {
-        const formVariable = branch.line.o;
-        if (formVariable === targetVariable && branch.optional === true) {
-          console.log(
-            `Removing "optional: true" for variable: ${targetVariable}`,
-          );
-          delete branch.optional;
-        }
-        if (branch.children && branch.children.length > 0) {
-          const childHasTargetVariable = branch.children.some(
-            (child: Branch) => child.line.o === targetVariable,
-          );
-          if (childHasTargetVariable && branch.optional === true) {
-            console.log(
-              `Removing "optional: true" for parent of variable: ${targetVariable}`,
-            );
-            delete branch.optional;
-          }
-          adjustOptionalFlags(branch.children, targetVariable);
-        }
-      });
-    };
-    adjustOptionalFlags(this.query.branches, variable);
+
+    // Supprimer optional sur la branche elle-même
+    const branch = this.findBranchByVariable(this.query.branches, variable);
+    if (branch && branch.optional) {
+      console.log(`Removing "optional: true" for variable: ${variable}`);
+      delete branch.optional;
+    }
+
+    // Remonter toute la chaîne des ancêtres et supprimer optional
+    let current = variable;
+    let parent = this.findParentBranch(this.query.branches, current);
+    while (parent) {
+      if (parent.optional) {
+        console.log(`Removing "optional: true" for ancestor: ${parent.line.o}`);
+        delete parent.optional;
+      }
+      current = parent.line.o;
+      parent = this.findParentBranch(this.query.branches, current);
+    }
   }
 
+  /**
+   * Resets the branch and its ancestor chain to their initial optional states.
+   */
   public resetToDefaultValueForWidget(variable: string) {
     console.log(`Resetting to default state for variable: ${variable}`);
 
@@ -484,80 +597,77 @@ class OptionalCriteriaManager {
     return null;
   }
 
+  /**
+   * Sets "notExists" for a widget variable.
+   * Adds notExists flag, removes optional on the branch and ALL ancestors.
+   */
   public setNotExistsForWidget(variable: string) {
     console.log(`Setting "notExists" for variable: ${variable}`);
 
-    const addNotExistsFlag = (branches: Branch[], targetVariable: string) => {
-      branches.forEach((branch: Branch) => {
-        if (branch.line && branch.line.o === targetVariable) {
-          console.log(
-            `Adding "notExists: true" for variable: ${targetVariable}`,
-          );
-          branch.notExists = true;
-          if (branch.optional === true) {
-            console.log(
-              `Removing "optional: true" for variable: ${targetVariable}`,
-            );
-            delete branch.optional;
-          }
-        }
-        if (branch.children && branch.children.length > 0) {
-          addNotExistsFlag(branch.children, targetVariable);
-        }
-      });
-    };
+    // Mettre notExists sur la branche cible et supprimer optional
+    const branch = this.findBranchByVariable(this.query.branches, variable);
+    if (branch) {
+      console.log(`Adding "notExists: true" for variable: ${variable}`);
+      branch.notExists = true;
+      if (branch.optional) {
+        console.log(`Removing "optional: true" for variable: ${variable}`);
+        delete branch.optional;
+      }
+    }
 
-    const adjustParentOptionalFlags = (
-      branches: Branch[],
-      targetVariable: string,
-    ) => {
-      branches.forEach((branch: Branch) => {
-        const childHasTargetVariable =
-          branch.children &&
-          branch.children.some(
-            (child: Branch) => child.line.o === targetVariable,
-          );
-        if (childHasTargetVariable && branch.optional === true) {
-          console.log(
-            `Removing "optional: true" for parent of variable: ${targetVariable}`,
-          );
-          delete branch.optional;
-        }
-        if (branch.children && branch.children.length > 0) {
-          adjustParentOptionalFlags(branch.children, targetVariable);
-        }
-      });
-    };
+    // Remonter toute la chaîne des ancêtres et supprimer optional
+    let current = variable;
+    let parent = this.findParentBranch(this.query.branches, current);
+    while (parent) {
+      if (parent.optional) {
+        console.log(`Removing "optional: true" for ancestor: ${parent.line.o}`);
+        delete parent.optional;
+      }
+      current = parent.line.o;
+      parent = this.findParentBranch(this.query.branches, current);
+    }
 
-    addNotExistsFlag(this.query.branches, variable);
-    adjustParentOptionalFlags(this.query.branches, variable);
+    // Clear criterias for this widget and notify listeners
+    try {
+      this.queryLine.criterias = [];
+      this.formFieldDiv.dispatchEvent(
+        new CustomEvent("valueRemoved", {
+          bubbles: true,
+          detail: { variable },
+        }),
+      );
+    } catch (err) {
+      console.error("Error clearing criterias after setting notExists:", err);
+    }
+
+    // Log the branch state for debugging
+    const updatedBranch = this.findBranch(this.query.branches);
+    console.log(
+      `Branch state after setNotExists for ${variable}:`,
+      updatedBranch,
+    );
   }
 
+  /**
+   * Removes "notExists" for a widget variable and restores initial optional states.
+   */
   public removeNotExistsForWidget(variable: string) {
     console.log(`Removing "notExists" for variable: ${variable}`);
 
-    const removeNotExistsFlag = (
-      branches: Branch[],
-      targetVariable: string,
-    ) => {
-      branches.forEach((branch: Branch) => {
-        if (branch.line && branch.line.o === targetVariable) {
-          delete branch.notExists;
-          const initialState = this.initialOptionalStates[targetVariable];
-          if (initialState) {
-            branch.optional = initialState.optional;
-            this.restoreParentOptionalChain(
-              branch,
-              initialState.parentOptionalChain,
-            );
-          }
-        }
-        if (branch.children && branch.children.length > 0) {
-          removeNotExistsFlag(branch.children, targetVariable);
-        }
-      });
-    };
-    removeNotExistsFlag(this.query.branches, variable);
+    const branch = this.findBranchByVariable(this.query.branches, variable);
+    if (branch) {
+      delete branch.notExists;
+      const initialState = this.initialOptionalStates[variable];
+      if (initialState) {
+        branch.optional = initialState.optional;
+        // Restaurer toute la chaîne des parents
+        this.restoreParentOptionalChain(
+          branch,
+          initialState.parentOptionalChain,
+        );
+      }
+    }
   }
 }
+
 export default OptionalCriteriaManager;
