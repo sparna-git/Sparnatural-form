@@ -1,17 +1,22 @@
-import { Branch, I18n, SparnaturalQueryIfc, SparnaturalSpecificationFactory, WidgetFactory } from "sparnatural";
+import {
+  Branch,
+  I18n,
+  SparnaturalQueryIfc,
+  SparnaturalSpecificationFactory,
+  WidgetFactory,
+} from "sparnatural";
 import { HTMLComponent } from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import ISettings from "../settings/ISettings";
 import { SparnaturalFormI18n } from "../settings/SparnaturalFormI18n";
 import ActionStoreForm from "../handling/ActionStore"; // Importer le store
-import * as YAML from 'js-yaml';
+import * as YAML from "js-yaml";
 import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
 import FormField from "./FormField";
 import { Binding, Form } from "../FormStructure";
 import { I18nForm } from "../settings/I18nForm";
 import { Catalog } from "rdf-shacl-commons";
-
 
 /**
  * the content of all HTML element attributes
@@ -47,7 +52,7 @@ class SparnaturalFormComponent extends HTMLComponent {
     //verify if the query is initialized
     if (!this.jsonQuery || !this.jsonQuery.branches) {
       console.error(
-        "jsonQuery is not initialized or does not contain branches."
+        "jsonQuery is not initialized or does not contain branches.",
       );
       return null;
     }
@@ -61,7 +66,7 @@ class SparnaturalFormComponent extends HTMLComponent {
     this.formConfig = this.formConfig; // Store the form configuration here
     // Get the form variables and query variables
     const formVariables = this.formConfig.bindings.map(
-      (binding: Binding) => binding.variable
+      (binding: Binding) => binding.variable,
     );
 
     // Adjust optional flags for all branches without removing them
@@ -78,16 +83,18 @@ class SparnaturalFormComponent extends HTMLComponent {
   //methode qui ajuste les branches optionnelles
   private adjustOptionalFlags(
     branches: Branch[],
-    parentOptional: boolean = false
+    parentOptional: boolean = false,
   ) {
     branches.forEach((branch: Branch) => {
       const formVariable = branch.line.o;
-      const hasValues = branch.line.criterias && branch.line.criterias.length > 0;
+      const hasValues =
+        branch.line.criterias && branch.line.criterias.length > 0;
       // Remove the optional flag if the branch has values
       if (
         hasValues ||
         branch.children?.some(
-          (child: Branch) => child.line.criterias && child.line.criterias.length > 0
+          (child: Branch) =>
+            child.line.criterias && child.line.criterias.length > 0,
         )
       ) {
         branch.optional = false;
@@ -148,7 +155,10 @@ class SparnaturalFormComponent extends HTMLComponent {
                 }
               }
             } catch (err) {
-              console.error("Unable to parse form configuration (JSON/YAML):", err);
+              console.error(
+                "Unable to parse form configuration (JSON/YAML):",
+                err,
+              );
               return;
             }
 
@@ -169,7 +179,8 @@ class SparnaturalFormComponent extends HTMLComponent {
                 this.html[0],
                 this.specProvider,
                 this.jsonQuery,
-                new WidgetFactory(this, this.specProvider, this.settings, null)
+                new WidgetFactory(this, this.specProvider, this.settings, null),
+                formConfig,
               );
               fieldGenerator.generateField();
             });
@@ -184,7 +195,7 @@ class SparnaturalFormComponent extends HTMLComponent {
               this.SubmitSection = new SubmitSection(
                 this,
                 $(submitBtn),
-                this.settings
+                this.settings,
               );
 
               this.SubmitSection.render();
@@ -197,7 +208,7 @@ class SparnaturalFormComponent extends HTMLComponent {
                 detail: {
                   sparnaturalForm: this,
                 },
-              })
+              }),
             );
           })
           .catch((error) => {
@@ -274,7 +285,7 @@ class SparnaturalFormComponent extends HTMLComponent {
       (sp: ISparnaturalSpecification) => {
         // call the call back when done
         callback(sp);
-      }
+      },
     );
   }
 
@@ -295,7 +306,7 @@ class SparnaturalFormComponent extends HTMLComponent {
         .catch((error) => {
           console.error(
             "Sparnatural - unable to load catalog file : " + settings.catalog,
-            error
+            error,
           );
         });
     }
@@ -321,7 +332,7 @@ class SparnaturalFormComponent extends HTMLComponent {
       .catch((error) => {
         console.error(
           "Sparnatural - unable to load JSON query file : " + queryUrl,
-          error
+          error,
         );
       });
   }

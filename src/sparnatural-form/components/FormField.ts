@@ -5,7 +5,7 @@ import { Branch, CriteriaLine, SparnaturalQueryIfc } from "sparnatural";
 import { ISparnaturalSpecification } from "sparnatural";
 import OptionalCriteriaManager from "./optionalCriteria/OptionalCriteriaManager";
 import { AbstractWidget, ValueRepetition, I18n } from "sparnatural";
-import { Binding } from "../FormStructure";
+import { Binding, Form } from "../FormStructure";
 import tippy from "tippy.js";
 import { I18nForm } from "../settings/I18nForm";
 
@@ -15,6 +15,7 @@ class FormField {
   private specProvider: ISparnaturalSpecification;
   private query: SparnaturalQueryIfc;
   private widgetFactory: WidgetFactory;
+  private formConfig: Form;
   private optionalCriteriaManager!: OptionalCriteriaManager; // Optional Criteria Manager instance
 
   constructor(
@@ -23,12 +24,19 @@ class FormField {
     specProvider: ISparnaturalSpecification,
     query: SparnaturalQueryIfc,
     widgetFactory: WidgetFactory,
+    formConfig: Form,
   ) {
     this.binding = binding;
     this.formContainer = formContainer;
     this.specProvider = specProvider;
     this.query = query;
     this.widgetFactory = widgetFactory;
+    this.formConfig = formConfig;
+  }
+
+  // Extraire les variables du formulaire depuis formConfig
+  private getFormVariables(): string[] {
+    return this.formConfig.bindings.map((binding: Binding) => binding.variable);
   }
 
   generateField(): void {
@@ -63,16 +71,18 @@ class FormField {
       const widget = this.createWidget(queryLine);
       formFieldDiv.appendChild(widget.html[0]);
 
-      // Initialize OptionalCriteriaManager
+      // Initialize OptionalCriteriaManager with formVariables
+      const formVariables = this.getFormVariables();
       this.optionalCriteriaManager = new OptionalCriteriaManager(
         this.query,
         variable,
         queryLine,
         widget,
         formFieldDiv,
+        formVariables,
       );
 
-      // Add options like "An'y value" and "Not Exist"
+      // Add options like "Any value" and "Not Exist"
       this.addValuesAndOptions(formFieldDiv, queryLine, widget, variable);
     }
   }
@@ -312,13 +322,15 @@ class FormField {
       });
     });
 
-    // Add An'yValue and NotExist options
+    // Add AnyValue and NotExist options
+    const formVariables = this.getFormVariables();
     this.optionalCriteriaManager = new OptionalCriteriaManager(
       this.query,
       variable,
       queryLine,
       widget,
       formFieldDiv,
+      formVariables,
     );
   }
 }

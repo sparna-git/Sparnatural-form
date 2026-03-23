@@ -22,6 +22,7 @@ class OptionalCriteriaManager {
     queryline: CriteriaLine, // The specific query line for this field
     private widget: AbstractWidget, // The widget associated with this field
     private formFieldDiv: HTMLElement, // The container for the form field
+    private formVariables: string[],
   ) {
     this.queryLine = queryline;
     this.saveInitialOptionalState(this.query.branches); // Save initial states for optional flags
@@ -410,9 +411,16 @@ class OptionalCriteriaManager {
   }
 
   private clearOptionalChain(variable: string) {
+    // Si la variable n'est pas dans le formulaire, c'est une criteria pré-remplie
+    // structurelle — on ne touche pas aux optional
+    if (!this.formVariables.includes(variable)) {
+      return;
+    }
+
     const branch = this.findBranchByVariable(this.query.branches, variable);
     if (!branch) return;
     branch.optional = false;
+
     let parent = this.findParentBranch(this.query.branches, branch.line.o);
     while (parent) {
       parent.optional = false;
