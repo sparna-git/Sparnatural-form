@@ -85,25 +85,32 @@ class SparnaturalFormComponent extends HTMLComponent {
     branches: Branch[],
     parentOptional: boolean = false,
   ) {
+    const formVariables = this.formConfig.bindings.map(
+      (binding: Binding) => binding.variable,
+    );
+
     branches.forEach((branch: Branch) => {
       const formVariable = branch.line.o;
       const hasValues =
         branch.line.criterias && branch.line.criterias.length > 0;
-      // Remove the optional flag if the branch has values
-      if (
-        hasValues ||
-        branch.children?.some(
-          (child: Branch) =>
-            child.line.criterias && child.line.criterias.length > 0,
-        )
-      ) {
+
+      // Vérifier si la branche elle-même a des valeurs ET est dans le formulaire
+      const hasFormValues = hasValues && formVariables.includes(formVariable);
+
+      // Vérifier si un enfant a des valeurs ET est dans le formulaire
+      const hasChildFormValues = branch.children?.some(
+        (child: Branch) =>
+          child.line.criterias &&
+          child.line.criterias.length > 0 &&
+          formVariables.includes(child.line.o),
+      );
+
+      if (hasFormValues || hasChildFormValues) {
         branch.optional = false;
       } else {
-        // If no values and not in form/query, propagate the optional flag from the parent
         branch.optional = branch.optional || parentOptional;
       }
 
-      // Recursively adjust the optional flags for child branches
       if (branch.children && branch.children.length > 0) {
         this.adjustOptionalFlags(branch.children, branch.optional);
       }
@@ -171,6 +178,7 @@ class SparnaturalFormComponent extends HTMLComponent {
 
             // Initialisation des labels
             this.#initSparnaturalFormStaticLabels(formConfig);
+            console.log("Form configuration loaded successfully:", formConfig);
 
             // Génération des champs du formulaire
             formConfig.bindings.forEach((binding: Binding) => {

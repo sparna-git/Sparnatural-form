@@ -1,0 +1,161 @@
+{
+  "bindings": [
+    {
+      "variable": "Procedure_Search",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Recherche (procédure ou description de sa notice)"
+        },
+        "help": {
+          "fr": "Expression régulière : ^Début, Fin$, . = joker 1 caractère, .* = joker plusieurs caractères"
+        }
+      }
+    },
+    {
+      "variable": "TypeProcedure",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Type de procédure"
+        }
+      }
+    },
+    {
+      "variable": "Cote",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Cote"
+        },
+        "help": {
+          "fr": "Expression régulière : ^Début, Fin$, . = joker 1 caractère, .* = joker plusieurs caractères"
+        }
+      }
+    },
+    {
+      "variable": "DateDebut",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Date de début"
+        }
+      }
+    },
+    {
+      "variable": "DateFin",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Date de fin"
+        }
+      }
+    },
+    {
+      "variable": "Juridiction",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Juridiction (recherche)"
+        }
+      }
+    },
+    {
+      "variable": "LegalStatus",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Juridiction par type"
+        }
+      }
+    },
+    {
+      "variable": "QualificationDesFaitsIRI",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Qualification des faits"
+        }
+      }
+    },
+    {
+      "variable": "Coordinates",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Lieu des faits (carte)"
+        },
+        "help": {
+          "fr": "Sélectionner un rectangle sur la carte et valider la saisie avec le bouton 'check'"
+        }
+      }
+    },
+    {
+      "variable": "LieuIRI",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Lieu des faits (recherche)"
+        },
+        "help": {
+          "fr": "Les procédures dans des lieux plus précis seront également ramenées (une recherche sur 'Haute-Garonne' ramènera les Procédures dont les faits se sont déroulés à Toulouse.)"
+        }
+      }
+    },
+    {
+      "variable": "PersonneMorale",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Personne morale impliquée"
+        }
+      }
+    },
+    {
+      "variable": "CorporateBodyType",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Type de personne morale impliquée"
+        }
+      }
+    },
+    {
+      "variable": "PersonnePhysique",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Personne physique impliquée"
+        }
+      }
+    },
+    {
+      "variable": "DemographicGroup",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Sexe des personnes impliquées"
+        }
+      }
+    },
+    {
+      "variable": "OccupationType",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "fr": "Profession des personnes impliquées"
+        }
+      }
+    }
+  ],
+  "variables": {
+    "onscreen": [
+      "Lien",
+      "Procedure_Libelle",
+      "QualificationDesFaits",
+      "Lieu",
+      "DateDebut",
+      "DateFin"
+    ]
+  }
+}

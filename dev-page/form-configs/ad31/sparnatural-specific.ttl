@@ -54,7 +54,7 @@ sacs:Liasse sh:deactivated "true"^^xsd:boolean .
 
 
 # Lien inverse
-sacs:Fait a sh:NodeShape;
+sacs:Fait
   sh:property sacs:Fait_inverse_resultsOrResultedFrom .
 
 sacs:Fait_inverse_resultsOrResultedFrom sh:path [ sh:inversePath rico:resultsOrResultedFrom ];
@@ -66,7 +66,7 @@ sacs:Fait_inverse_resultsOrResultedFrom sh:path [ sh:inversePath rico:resultsOrR
 
 
 # Lien inverse
-sacs:Instruction a sh:NodeShape;
+sacs:Instruction
   sh:property sacs:Instruction_inverse_hasOrHadSubevent .
 
 sacs:Instruction_inverse_hasOrHadSubevent sh:path [ sh:inversePath rico:hasOrHadSubevent ];
@@ -79,7 +79,7 @@ sacs:Instruction_inverse_hasOrHadSubevent sh:path [ sh:inversePath rico:hasOrHad
 
 
 # Lien inverse
-sacs:Juridiction a sh:NodeShape;
+sacs:Juridiction
   sh:property sacs:Juridiction_inverse_isOrWasPerformedBy .
 
 sacs:Juridiction_inverse_isOrWasPerformedBy sh:path [ sh:inversePath rico:isOrWasPerformedBy ];
@@ -90,7 +90,7 @@ sacs:Juridiction_inverse_isOrWasPerformedBy sh:path [ sh:inversePath rico:isOrWa
 
 
 # Lien inverse
-sacs:Juridiction a sh:NodeShape;
+sacs:Juridiction
   sh:property sacs:Juridiction_inverse_hasOrganicProvenance .
 
 sacs:Juridiction_inverse_hasOrganicProvenance sh:path [ sh:inversePath rico:hasOrganicProvenance ];
@@ -101,7 +101,7 @@ sacs:Juridiction_inverse_hasOrganicProvenance sh:path [ sh:inversePath rico:hasO
 
 
 # Lien inverse
-sacs:Lieu a sh:NodeShape;
+sacs:Lieu
   sh:property sacs:Lieu_inverse_hasOrHadLocation .
 
 sacs:Lieu_inverse_hasOrHadLocation sh:path [ sh:inversePath rico:hasOrHadLocation ];
@@ -111,7 +111,7 @@ sacs:Lieu_inverse_hasOrHadLocation sh:path [ sh:inversePath rico:hasOrHadLocatio
 
 
 # Lien inverse
-sacs:Lieu a sh:NodeShape;
+sacs:Lieu
   sh:property sacs:Lieu_inverse_agentHasOrHadLocation .
 
 sacs:Lieu_inverse_agentHasOrHadLocation sh:path [ sh:inversePath rico:agentHasOrHadLocation ];
@@ -120,7 +120,7 @@ sacs:Lieu_inverse_agentHasOrHadLocation sh:path [ sh:inversePath rico:agentHasOr
   sh:or ( [sh:node sacs:Juridiction] [sh:node sacs:PersonnePhysique] [sh:node sacs:PersonneMorale] ).
 
 # Lien inverse
-sacs:Procedure a sh:NodeShape;
+sacs:Procedure
   sh:property sacs:Procedure_inverse_documents .
 
 sacs:Procedure_inverse_documents sh:path [ sh:inversePath rico:documents ];
@@ -132,7 +132,7 @@ sacs:Procedure_inverse_documents sh:path [ sh:inversePath rico:documents ];
 
 
 # Lien inverse
-sacs:PersonneMorale a sh:NodeShape;
+sacs:PersonneMorale
   sh:property sacs:PersonneMorale_inverse_hasOrHadParticipant .
 
 sacs:PersonneMorale_inverse_hasOrHadParticipant sh:path [ sh:inversePath rico:hasOrHadParticipant ];
@@ -143,7 +143,7 @@ sacs:PersonneMorale_inverse_hasOrHadParticipant sh:path [ sh:inversePath rico:ha
 
 
 # Lien inverse
-sacs:PersonnePhysique a sh:NodeShape;
+sacs:PersonnePhysique
   sh:property sacs:PersonnePhysique_inverse_hasOrHadParticipant .
 
 sacs:PersonnePhysique_inverse_hasOrHadParticipant sh:path [ sh:inversePath rico:hasOrHadParticipant ];
@@ -153,9 +153,37 @@ sacs:PersonnePhysique_inverse_hasOrHadParticipant sh:path [ sh:inversePath rico:
   sh:node sacs:Procedure .
 
 
+# Champ de recherche Libellé procédure + notice
+sacs:Procedure
+  sh:property sacs:Procedure_search .
+
+sacs:Procedure_search sh:path [ sh:alternativePath (
+  rico:name 
+  (
+    [sh:inversePath rico:documents]
+    rico:generalDescription
+  )
+) ];
+  sh:name "recherche"@fr;
+  sh:node sacs:Search ;
+  sh:nodeKind sh:Literal;
+  dash:searchWidget core:SearchProperty;
+.
 
 
+# Recherche Fait --> Lieu avec héritage sur les "sous-lieux"
+sacs:Fait
+  sh:property sacs:Fait_hasOrHadLocation_isDirectlyContainedBy_star .
 
+sacs:Fait_hasOrHadLocation_isDirectlyContainedBy_star sh:path (
+  rico:hasOrHadLocation
+  [ sh:zeroOrMorePath rico:isDirectlyContainedBy ]
+) ;
+  sh:name "ont eu pour localisation"@fr;
+  sh:description "Les faits se sont déroulés dans un contexte géographique"@fr;
+  sh:nodeKind sh:IRI;
+  sh:class rico:Place;
+  dash:searchWidget core:AutocompleteProperty .
 
 
 
