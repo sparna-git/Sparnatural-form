@@ -14,11 +14,13 @@ class CleanQuery {
   private variablesUsedInFormConfig: string[];
   private formConfig: Form;
   private settings: any;
+  private formVariables: string[];
 
   constructor(query: SparnaturalQueryIfc, formConfig: Form, settings: any) {
     this.query = query;
     this.formConfig = formConfig;
     this.settings = settings;
+    this.formVariables = this.getFormVariables(this.formConfig);
   }
 
   // Obtenir les form variables à partir de formConfig
@@ -82,7 +84,7 @@ class CleanQuery {
       }))
       .filter((branch) => {
         const variable = branch.line?.o;
-        const hasValues = this.branchHasValues(branch);
+        const hasValues = this.branchHasFormValues(branch);
         const isOptional = branch.optional || false;
         const parentOptional = this.isParentOptional(branch.line?.o);
 
@@ -104,18 +106,46 @@ class CleanQuery {
   }
 
   /**
+   * Vérifie si une branche ou ses descendants possèdent des criterias
+   * provenant du formulaire (ajoutées par l'utilisateur).
+   * Les criterias pré-remplies (variables hors formulaire) ne comptent pas.
+   */
+  private branchHasFormValues(branch: Branch | null): boolean {
+    if (!branch) return false;
+    if (
+      branch.line &&
+      Array.isArray(branch.line.criterias) &&
+      branch.line.criterias.length > 0 &&
+      this.formVariables.includes(branch.line.o)
+    ) {
+      return true;
+    }
+    if (branch.children && branch.children.length > 0) {
+      for (const child of branch.children) {
+        if (this.branchHasFormValues(child)) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * @return the array of all queries that are used in the query result, either directly or as aggregated variables
    */
   private getVariablesUsedInResultSet(theQuery: SparnaturalQueryIfc): string[] {
     if (!theQuery.variables) return [];
-    else {
-      return Array.isArray(theQuery.variables)
-        ? // either this is a simple variable, or this is an aggregated variable
-          theQuery.variables.map((v) =>
-            "value" in v ? v.value : v.expression.expression.value,
-          )
-        : [];
-    }
+    return Array.isArray(theQuery.variables)
+      ? theQuery.variables.flatMap((v) => {
+          if ("value" in v) {
+            // Simple variable
+            return [v.value];
+          } else {
+            // Aggregated variable : retourner la variable interne ET l'alias
+            const inner = v.expression.expression.value;
+            const alias = v.variable.value;
+            return [inner, alias];
+          }
+        })
+      : [];
   }
 
   // Vérifier si le parent d'une branche est optionnel
@@ -172,12 +202,15 @@ class CleanQuery {
   ): SparnaturalQueryIfc {
     if (resultType == "onscreen") {
       query.variables = query.variables.filter((v) => {
-        // retain only the columns that are useful for an onscreen display
-        // the list of columns for onscreen display is a section in the form config
+        // Pour une variable simple : v.value
+        // Pour un agrégat : vérifier la variable interne ET l'alias
         let varName = "value" in v ? v.value : v.expression.expression.value;
+        let aliasName = "value" in v ? null : v.variable.value;
+
         return (
           !formConfig.variables?.onscreen ||
-          formConfig.variables?.onscreen?.includes(varName)
+          formConfig.variables?.onscreen?.includes(varName) ||
+          (aliasName && formConfig.variables?.onscreen?.includes(aliasName))
         );
       });
       return query;

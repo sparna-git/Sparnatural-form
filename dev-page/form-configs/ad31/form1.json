@@ -152,6 +152,7 @@
     "onscreen": [
       "Lien",
       "Procedure_Libelle",
+      "TypeProcedure",
       "QualificationDesFaits",
       "Lieu",
       "DateDebut",

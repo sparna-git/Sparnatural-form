@@ -29,6 +29,25 @@
       "value": "Procedure_Libelle"
     },
     {
+      "termType": "Variable",
+      "value": "PresentationContenu"
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "TypesProc"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "TypeProcedure"
+      }
+    },
+    {
       "expression": {
         "type": "aggregate",
         "aggregation": "group_concat",
@@ -65,6 +84,86 @@
     {
       "termType": "Variable",
       "value": "DateFin"
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "Libelle"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "PersonnesPhysiques"
+      }
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "PersonneMorale"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "PersonnesMorales"
+      }
+    },
+    {
+      "termType": "Variable",
+      "value": "Juridiction_1_libelle"
+    },
+    {
+      "termType": "Variable",
+      "value": "Juridiction_3_libelle"
+    },
+    {
+      "termType": "Variable",
+      "value": "NbPieces"
+    },
+    {
+      "termType": "Variable",
+      "value": "IntituleLiasse"
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "SacLiasse"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "ReferencesSacsLiasse"
+      }
+    },
+    {
+      "termType": "Variable",
+      "value": "Odd"
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "CoteLiee"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "CotesAssociees"
+      }
     }
   ],
   "order": null,
@@ -87,7 +186,8 @@
         "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
         "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
         "criterias": []
-      }
+      },
+      "optional": true
     },
     {
       "line": {
@@ -121,6 +221,17 @@
             }
           ],
           "optional": true
+        },
+        {
+          "line": {
+            "s": "Notice",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice_generalDescription",
+            "o": "PresentationContenu",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Text",
+            "criterias": []
+          },
+          "optional": true
         }
       ]
     },
@@ -132,7 +243,8 @@
         "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
         "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#TypeProcedure",
         "criterias": []
-      }
+      },
+      "optional": true
     },
     {
       "line": {
@@ -195,7 +307,6 @@
             "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
             "criterias": []
           },
-          "optional": true,
           "children": [
             {
               "line": {
@@ -227,7 +338,96 @@
                 "criterias": []
               }
             }
-          ]
+          ],
+          "optional": true
+        },
+        {
+          "line": {
+            "s": "Sac",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac_wasComponentOf",
+            "o": "Liasse",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Liasse",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Liasse",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Liasse_title",
+                "o": "IntituleLiasse",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Liasse",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                "criterias": []
+              }
+            },
+            {
+              "line": {
+                "s": "Liasse",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Liasse_hadComponent",
+                "o": "Sac_3",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Liasse",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+                "criterias": []
+              },
+              "children": [
+                {
+                  "line": {
+                    "s": "Sac_3",
+                    "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac_hasOrHadIdentifier",
+                    "o": "Identifiant_4",
+                    "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+                    "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                    "criterias": []
+                  },
+                  "children": [
+                    {
+                      "line": {
+                        "s": "Identifiant_4",
+                        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant_hasIdentifierType",
+                        "o": "IdentifierType_4",
+                        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#IdentifierType",
+                        "criterias": [
+                          {
+                            "label": "cote actuelle",
+                            "criteria": {
+                              "rdfTerm": {
+                                "type": "uri",
+                                "value": "https://data.archives.haute-garonne.fr/type/idact"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "line": {
+                        "s": "Identifiant_4",
+                        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant_name",
+                        "o": "SacLiasse",
+                        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                        "criterias": []
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "optional": true
+        },
+        {
+          "line": {
+            "s": "Sac",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac_structure",
+            "o": "Odd",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Text",
+            "criterias": []
+          },
+          "optional": true
         }
       ]
     },
@@ -536,6 +736,330 @@
             "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#DateLiteral",
             "criterias": []
           }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasOrHadParticipant",
+        "o": "PersonnePhysique_4",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonnePhysique",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "PersonnePhysique_4",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonnePhysique_name",
+            "o": "Libelle",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonnePhysique",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+            "criterias": []
+          }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasOrHadParticipant",
+        "o": "PersonneMorale_3",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonneMorale",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "PersonneMorale_3",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonneMorale_name",
+            "o": "PersonneMorale",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#PersonneMorale",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+            "criterias": []
+          }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasOrHadSubevent",
+        "o": "Instruction_3",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Instruction_3",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_hasActivityType_OrdreActivite",
+            "o": "OrdreInstruction",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#OrdreInstruction",
+            "criterias": [
+              {
+                "label": "première instruction",
+                "criteria": {
+                  "rdfTerm": {
+                    "type": "uri",
+                    "value": "https://data.archives.haute-garonne.fr/type/oipre"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "line": {
+            "s": "Instruction_3",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_isOrWasPerformedBy",
+            "o": "Juridiction_3",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Juridiction_3",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction_name",
+                "o": "Juridiction_1_libelle",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                "criterias": []
+              }
+            }
+          ]
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasOrHadSubevent",
+        "o": "Instruction_4",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Instruction_4",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_hasActivityType_OrdreActivite",
+            "o": "OrdreInstruction_2",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#OrdreInstruction",
+            "criterias": [
+              {
+                "label": "deuxième instruction",
+                "criteria": {
+                  "rdfTerm": {
+                    "type": "uri",
+                    "value": "https://data.archives.haute-garonne.fr/type/oideu"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "line": {
+            "s": "Instruction_4",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_isOrWasPerformedBy",
+            "o": "Juridiction_4",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Juridiction_4",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction_name",
+                "o": "Juridiction_2_Libelle",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                "criterias": []
+              }
+            }
+          ]
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasOrHadSubevent",
+        "o": "Instruction_5",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Instruction_5",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_hasActivityType_OrdreActivite",
+            "o": "OrdreInstruction_3",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#OrdreInstruction",
+            "criterias": [
+              {
+                "label": "troisième instruction",
+                "criteria": {
+                  "rdfTerm": {
+                    "type": "uri",
+                    "value": "https://data.archives.haute-garonne.fr/type/oitro"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "line": {
+            "s": "Instruction_5",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction_isOrWasPerformedBy",
+            "o": "Juridiction_5",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Instruction",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Juridiction_5",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction_name",
+                "o": "Juridiction_3_libelle",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Juridiction",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                "criterias": []
+              }
+            }
+          ]
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_inverse_documents",
+        "o": "Notice_2",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Notice_2",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice_recordResourceExtent",
+            "o": "NbPieces",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Notice",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Number",
+            "criterias": []
+          }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_hasActivityType_ProcedureType",
+        "o": "TypeProcedure",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#TypeProcedure",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "TypeProcedure",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#TypeProcedure_prefLabel",
+            "o": "TypesProc",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#TypeProcedure",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+            "criterias": []
+          }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Procedure",
+        "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_isAssociatedWithEvent",
+        "o": "Procedure_2",
+        "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Procedure_2",
+            "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure_inverse_documents",
+            "o": "Sac_2",
+            "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Procedure",
+            "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Sac_2",
+                "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac_hasOrHadIdentifier",
+                "o": "Identifiant_3",
+                "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Sac",
+                "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                "criterias": []
+              },
+              "children": [
+                {
+                  "line": {
+                    "s": "Identifiant_3",
+                    "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant_hasIdentifierType",
+                    "o": "IdentifierType_3",
+                    "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                    "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#IdentifierType",
+                    "criterias": [
+                      {
+                        "label": "cote actuelle",
+                        "criteria": {
+                          "rdfTerm": {
+                            "type": "uri",
+                            "value": "https://data.archives.haute-garonne.fr/type/idact"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "line": {
+                    "s": "Identifiant_3",
+                    "p": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant_name",
+                    "o": "CoteLiee",
+                    "sType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Identifiant",
+                    "oType": "https://data.archives.haute-garonne.fr/modeles/sacsaproces#Libelle",
+                    "criterias": []
+                  }
+                }
+              ]
+            }
+          ]
         }
       ],
       "optional": true
