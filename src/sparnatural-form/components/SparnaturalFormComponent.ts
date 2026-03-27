@@ -81,6 +81,7 @@ class SparnaturalFormComponent extends HTMLComponent {
   }
 
   //methode qui ajuste les branches optionnelles
+  // Méthode qui ajuste les branches optionnelles
   private adjustOptionalFlags(
     branches: Branch[],
     parentOptional: boolean = false,
@@ -90,14 +91,14 @@ class SparnaturalFormComponent extends HTMLComponent {
     );
 
     branches.forEach((branch: Branch) => {
-      const formVariable = branch.line.o;
+      const branchVariable = branch.line.o;
       const hasValues =
         branch.line.criterias && branch.line.criterias.length > 0;
 
-      // Vérifier si la branche elle-même a des valeurs ET est dans le formulaire
-      const hasFormValues = hasValues && formVariables.includes(formVariable);
+      // Vérifier si la branche a des valeurs DU FORMULAIRE uniquement
+      const hasFormValues = hasValues && formVariables.includes(branchVariable);
 
-      // Vérifier si un enfant a des valeurs ET est dans le formulaire
+      // Vérifier si un enfant a des valeurs DU FORMULAIRE uniquement
       const hasChildFormValues = branch.children?.some(
         (child: Branch) =>
           child.line.criterias &&
@@ -105,6 +106,26 @@ class SparnaturalFormComponent extends HTMLComponent {
           formVariables.includes(child.line.o),
       );
 
+      // NOUVEAU : Vérifier si la branche ou ses descendants ont des criterias PRÉ-REMPLIES
+      // Si oui, on NE TOUCHE PAS au flag optional (on garde l'état initial)
+      const hasPrefilledValues = this.branchHasPrefilledValues(
+        branch,
+        formVariables,
+      );
+
+      if (hasPrefilledValues) {
+        // Ne pas modifier le flag optional pour les branches avec criterias pré-remplies
+        // On continue quand même la récursion pour les enfants
+        if (branch.children && branch.children.length > 0) {
+          this.adjustOptionalFlags(
+            branch.children,
+            branch.optional || parentOptional,
+          );
+        }
+        return; // Skip la modification du flag optional pour cette branche
+      }
+
+      // Logique normale pour les branches du formulaire
       if (hasFormValues || hasChildFormValues) {
         branch.optional = false;
       } else {
@@ -115,6 +136,36 @@ class SparnaturalFormComponent extends HTMLComponent {
         this.adjustOptionalFlags(branch.children, branch.optional);
       }
     });
+  }
+
+  /**
+   * Vérifie si une branche ou ses descendants ont des criterias pré-remplies
+   * (c'est-à-dire des criterias sur des variables qui ne sont PAS dans le formulaire)
+   */
+  private branchHasPrefilledValues(
+    branch: Branch,
+    formVariables: string[],
+  ): boolean {
+    if (!branch) return false;
+
+    // Vérifier si cette branche a des criterias ET n'est PAS dans le formulaire (= pré-remplie)
+    if (
+      branch.line &&
+      Array.isArray(branch.line.criterias) &&
+      branch.line.criterias.length > 0 &&
+      !formVariables.includes(branch.line.o)
+    ) {
+      return true;
+    }
+
+    // Vérifier récursivement les enfants
+    if (branch.children && branch.children.length > 0) {
+      for (const child of branch.children) {
+        if (this.branchHasPrefilledValues(child, formVariables)) return true;
+      }
+    }
+
+    return false;
   }
 
   render(): this {

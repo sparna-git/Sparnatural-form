@@ -7,7 +7,6 @@ import { Binding, Form } from "../FormStructure";
  * the condition is that the o haven't any values, not exist in query.variables and it's optional or his father is optional
  * @returns the cleaned query
  */
-
 class CleanQuery {
   private query: SparnaturalQueryIfc;
   // Thomas : this is not used anymore (05/02/2025)
@@ -22,7 +21,6 @@ class CleanQuery {
     this.settings = settings;
     this.formVariables = this.getFormVariables(this.formConfig);
   }
-
   // Obtenir les form variables à partir de formConfig
   getFormVariables(form: Form): string[] {
     return form.bindings.map((binding: Binding) => binding.variable);
@@ -31,7 +29,6 @@ class CleanQuery {
   //methods to clean the querytouse
   cleanQueryToUse(resultType: "onscreen" | "export"): SparnaturalQueryIfc {
     // deep copy of the initial query
-
     let cleanQueryResult = deepCloneWithDates(this.query);
 
     // remove selected variables if onscreen display
@@ -45,23 +42,17 @@ class CleanQuery {
     );
     console.log("Type", resultType);
 
-    //if (this.resultType == "onscreen") {
     this.variablesUsedInFormConfig = this.getFormVariables(this.formConfig);
 
     // re-list the variables used in the result set, after the previous filtering step
     let variablesUsedInResultSet: string[] =
       this.getVariablesUsedInResultSet(cleanQueryResult);
 
-    // clean the branches (= the WHERE clause)
-
     cleanQueryResult.branches = this.cleanBranches(
       cleanQueryResult.branches,
       variablesUsedInResultSet,
     );
-    // } else {
-    //cleanQueryResult = this.query;
-    //}
-    // Add the limit from settings to the cleaned query
+
     if (this.settings && this.settings.limit !== undefined) {
       cleanQueryResult.limit = this.settings.limit;
     }
@@ -76,7 +67,6 @@ class CleanQuery {
     return branches
       .map((branch) => ({
         ...branch,
-        // D'abord, nettoyer récursivement les enfants (bottom-up)
         children: this.cleanBranches(
           branch.children || [],
           variablesUsedInResultSet,
@@ -84,20 +74,20 @@ class CleanQuery {
       }))
       .filter((branch) => {
         const variable = branch.line?.o;
-        const hasValues = this.branchHasFormValues(branch);
+        // utiliser branchHasAnyValues
+        const hasValues = this.branchHasAnyValues(branch);
         const isOptional = branch.optional || false;
         const parentOptional = this.isParentOptional(branch.line?.o);
 
         const existsInQueryVariables =
           variablesUsedInResultSet.find((v) => v === variable) !== undefined;
 
-        // Après le nettoyage bottom-up, on vérifie si la branche a encore des enfants
         const hasRemainingChildren =
           branch.children && branch.children.length > 0;
 
         const shouldRemove =
           !existsInQueryVariables &&
-          !hasRemainingChildren && // plus besoin de hasSelectedDescendant, les enfants sont déjà nettoyés
+          !hasRemainingChildren &&
           !hasValues &&
           (isOptional || parentOptional);
 
@@ -105,32 +95,6 @@ class CleanQuery {
       });
   }
 
-  /**
-   * Vérifie si une branche ou ses descendants possèdent des criterias
-   * provenant du formulaire (ajoutées par l'utilisateur).
-   * Les criterias pré-remplies (variables hors formulaire) ne comptent pas.
-   */
-  private branchHasFormValues(branch: Branch | null): boolean {
-    if (!branch) return false;
-    if (
-      branch.line &&
-      Array.isArray(branch.line.criterias) &&
-      branch.line.criterias.length > 0 &&
-      this.formVariables.includes(branch.line.o)
-    ) {
-      return true;
-    }
-    if (branch.children && branch.children.length > 0) {
-      for (const child of branch.children) {
-        if (this.branchHasFormValues(child)) return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * @return the array of all queries that are used in the query result, either directly or as aggregated variables
-   */
   private getVariablesUsedInResultSet(theQuery: SparnaturalQueryIfc): string[] {
     if (!theQuery.variables) return [];
     return Array.isArray(theQuery.variables)
@@ -170,8 +134,50 @@ class CleanQuery {
   }
 
   /**
-   * Vérifie récursivement si une branche ou l'un de ses descendants possède des criterias (valeurs).
+   * NOUVELLE MÉTHODE : Vérifie si une branche ou ses descendants possèdent des criterias,
+   * qu'elles soient du formulaire OU pré-remplies (structurelles).
+   * Les branches avec criterias pré-remplies ne doivent JAMAIS être supprimées.
    */
+  private branchHasAnyValues(branch: Branch | null): boolean {
+    if (!branch) return false;
+    // Vérifier si cette branche a des criterias (peu importe si c'est dans le formulaire ou non)
+    if (
+      branch.line &&
+      Array.isArray(branch.line.criterias) &&
+      branch.line.criterias.length > 0
+    ) {
+      return true;
+    }
+    // Vérifier récursivement les enfants
+    if (branch.children && branch.children.length > 0) {
+      for (const child of branch.children) {
+        if (this.branchHasAnyValues(child)) return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * ANCIENNE MÉTHODE conservée pour référence - vérifie uniquement les criterias du formulaire
+   */
+  private branchHasFormValues(branch: Branch | null): boolean {
+    if (!branch) return false;
+    if (
+      branch.line &&
+      Array.isArray(branch.line.criterias) &&
+      branch.line.criterias.length > 0 &&
+      this.formVariables.includes(branch.line.o)
+    ) {
+      return true;
+    }
+    if (branch.children && branch.children.length > 0) {
+      for (const child of branch.children) {
+        if (this.branchHasFormValues(child)) return true;
+      }
+    }
+    return false;
+  }
+
   private branchHasValues(branch: Branch | null): boolean {
     if (!branch) return false;
     if (
@@ -189,12 +195,6 @@ class CleanQuery {
     return false;
   }
 
-  /**
-   *
-   * @param query The query from which to remove the selected variables
-   * @param resultType The type of expected result. Depending on the type of result, only some columns are kept in the result set
-   * @returns
-   */
   private removeUnusedVariablesFromSelect(
     query: SparnaturalQueryIfc,
     resultType: "onscreen" | "export",
