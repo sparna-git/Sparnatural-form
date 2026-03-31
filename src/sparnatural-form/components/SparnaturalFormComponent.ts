@@ -129,7 +129,7 @@ class SparnaturalFormComponent extends HTMLComponent {
       if (hasFormValues || hasChildFormValues) {
         branch.optional = false;
       } else {
-        branch.optional = branch.optional || parentOptional;
+        // branch.optional = parentOptional;
       }
 
       if (branch.children && branch.children.length > 0) {
