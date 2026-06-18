@@ -9,6 +9,17 @@ import { Binding, Form } from "../FormStructure";
 import tippy from "tippy.js";
 import { I18nForm } from "../settings/I18nForm";
 
+// Handle to a rendered form field
+export interface FieldHandle {
+  variable: string;
+  widget: AbstractWidget;
+  queryLine: CriteriaLine;
+  formFieldDiv: HTMLElement;
+  optionalCriteriaManager: OptionalCriteriaManager;
+  // Fully clears the field
+  clear: () => void;
+}
+
 class FormField {
   private binding: Binding;
   private formContainer: HTMLElement;
@@ -16,6 +27,7 @@ class FormField {
   private query: SparnaturalQueryIfc;
   private widgetFactory: WidgetFactory;
   private formConfig: Form;
+  private fieldRegistry?: Map<string, FieldHandle>;
   private optionalCriteriaManager!: OptionalCriteriaManager; // Optional Criteria Manager instance
 
   constructor(
@@ -25,6 +37,7 @@ class FormField {
     query: SparnaturalQueryIfc,
     widgetFactory: WidgetFactory,
     formConfig: Form,
+    fieldRegistry?: Map<string, FieldHandle>,
   ) {
     this.binding = binding;
     this.formContainer = formContainer;
@@ -32,6 +45,7 @@ class FormField {
     this.query = query;
     this.widgetFactory = widgetFactory;
     this.formConfig = formConfig;
+    this.fieldRegistry = fieldRegistry;
   }
 
   // Extraire les variables du formulaire depuis formConfig
@@ -73,6 +87,7 @@ class FormField {
 
       // Initialize OptionalCriteriaManager with formVariables
       const formVariables = this.getFormVariables();
+      console.log("Form variables for OptionalCriteriaManager:", formVariables);
       this.optionalCriteriaManager = new OptionalCriteriaManager(
         this.query,
         variable,
@@ -83,7 +98,25 @@ class FormField {
       );
 
       // Add options like "Any value" and "Not Exist"
-      this.addValuesAndOptions(formFieldDiv, queryLine, widget, variable);
+      const clear = this.addValuesAndOptions(
+        formFieldDiv,
+        queryLine,
+        widget,
+        variable,
+      );
+
+      // Register this field so the form can programmatically pre-fill it later
+      // (used by SparnaturalFormComponent.loadQuery).
+      if (this.fieldRegistry) {
+        this.fieldRegistry.set(variable, {
+          variable,
+          widget,
+          queryLine,
+          formFieldDiv,
+          optionalCriteriaManager: this.optionalCriteriaManager,
+          clear,
+        });
+      }
     }
   }
 
@@ -153,12 +186,14 @@ class FormField {
   }
 
   //methode to add values and options to the widget in the form
+  // Returns a "clear" callback that fully resets the field (including the
+  // internal selectedValues set), used by SparnaturalFormComponent.loadQuery.
   private addValuesAndOptions(
     formFieldDiv: HTMLElement,
     queryLine: CriteriaLine,
     widget: AbstractWidget,
     variable: string,
-  ): void {
+  ): () => void {
     const valueDisplay = document.createElement("div");
     valueDisplay.setAttribute("id", `selected-value-${variable}`);
     valueDisplay.classList.add("value-display-container");
@@ -332,6 +367,26 @@ class FormField {
       formFieldDiv,
       formVariables,
     );
+
+    // Return a callback that fully resets this field. Crucially it empties the
+    // internal "selectedValues" set (which lives in this closure), so a value
+    // can be injected again even if it was previously selected.
+    return () => {
+      selectedValues.clear();
+      updateValueDisplay();
+      queryLine.criterias = [];
+
+      if ((widget as any).widgetValues) {
+        (widget as any).widgetValues = [];
+      }
+
+      resetMapButton();
+
+      const inputs = widget.html[0].querySelectorAll("input");
+      inputs.forEach((input) => {
+        (input as HTMLInputElement).value = "";
+      });
+    };
   }
 }
 export default FormField;

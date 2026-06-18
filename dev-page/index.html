@@ -70,6 +70,12 @@
       <div class="row">
         <!-- Formulaire à gauche -->
         <div class="col-md-4">
+          <!-- Dropdown des requêtes prédéfinies -->
+          <div
+            id="predefined-queries"
+            data-queries="./form-configs/sapa/query-remp.json"
+          ></div>
+
           <!-- Sparnatural Form -->
           <!-- <sparnatural-form
             src="form-configs/dbpedia/dbpediafr-config.ttl"
@@ -83,14 +89,14 @@
           ></sparnatural-form>-->
 
           <sparnatural-form
-            src="./form-configs/ad31/ad31-shacl.ttl ./form-configs/ad31/sparnatural-specific.ttl"
+            src="form-configs/sapa/autorites-shacl.ttl form-configs/sapa/collections-shacl.ttl form-configs/sapa/instantiations-shacl.ttl form-configs/sapa/performances-shacl.ttl form-configs/sapa/sparnatural-extension.ttl"
             lang="fr"
             defaultLang="fr"
-            limit="5000"
-            endpoint="https://data.sparna.fr/graphdb/repositories/AD31"
-            form="./form-configs/ad31/form1.json"
+            limit="1000"
+            endpoint="https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=https%3A%2F%2Fwww.performing-arts.ch%2Fsparql"
+            form="./form-configs/sapa/form1.json"
             prefixes="skos:http://www.w3.org/2004/02/skos/core# rico:https://www.ica.org/standards/RiC/ontology# spao:http://ontology.performing-arts.ch/ ebucore:https://www.ebu.ch/metadata/ontologies/ebucore# crm:http://www.cidoc-crm.org/cidoc-crm/ premis:http://www.loc.gov/premis/rdf/v1#"
-            query="./form-configs/ad31/query1.json"
+            query="./form-configs/sapa/query1.json"
           ></sparnatural-form>
         </div>
 
@@ -102,8 +108,8 @@
                 Les requêtes sont envoyées à
                 <a
                   id="endpoint"
-                  href="https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=https%3A%2F%2Fwww.dev.performing-arts.ch%2Fsparql"
-                  >https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=https%3A%2F%2Fwww.dev.performing-arts.ch%2Fsparql</a
+                  href="https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=https%3A%2F%2Fwww.performing-arts.ch%2Fsparql"
+                  >https://proxy.sparnatural.eu/sparql-proxy/sparql?endpoint=https%3A%2F%2Fwww.performing-arts.ch%2Fsparql</a
                 >
               </span>
             </div>

@@ -95,6 +95,26 @@ class OptionalCriteriaManager {
     saveState(queryBranches, parentOptionalChain);
   }
 
+  // Fully resets the optional state (any value / not exist) of this field, so a
+  // prefill starts from a clean state. Restores the branch optional/notExists
+  // flags, unchecks the toggles, removes the pills and re-enables the widget.
+  public resetOptionalState() {
+    this.resetToDefaultValueForWidget(this.variable);
+
+    // remove any value / not exist pills if present
+    this.removePill("any-value");
+    this.removePill("not-exist");
+
+    // uncheck toggles without firing their change handlers
+    if (this.anyValueToggle) this.anyValueToggle.checked = false;
+    if (this.notExistToggle) this.notExistToggle.checked = false;
+
+    // re-enable the widget and rebuild the option container
+    this.widget.enableWidget();
+    this.createOptionContainer();
+    this.updateOptionVisibility();
+  }
+
   /**
    * Updates the visibility and enabled state of "Any value" and "Not Exist" options.
    */

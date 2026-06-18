@@ -13,8 +13,14 @@ import ActionStoreForm from "../handling/ActionStore"; // Importer le store
 import * as YAML from "js-yaml";
 import SubmitSection from "./buttons/SubmitSection";
 import { SparnaturalFormElement } from "../../SparnaturalFormElement";
-import FormField from "./FormField";
-import { Binding, Form } from "../FormStructure";
+import FormField, { FieldHandle } from "./FormField";
+import {
+  Binding,
+  Form,
+  FlatQueryValues,
+  RawQueryValues,
+} from "../FormStructure";
+import { FormPrefiller } from "../handling/FormPrefiller";
 import { I18nForm } from "../settings/I18nForm";
 import { Catalog } from "rdf-shacl-commons";
 
@@ -39,6 +45,14 @@ class SparnaturalFormComponent extends HTMLComponent {
   catalog: Catalog;
 
   formConfig: Form; // Stocker la configuration du formulaire ici
+
+  // Registry of rendered fields, keyed by form variable. Populated during
+  // form generation and used by loadQuery() to pre-fill fields programmatically.
+  fieldRegistry: Map<string, FieldHandle> = new Map();
+
+  // Handles all the pre-filling logic (loadQuery / loadQueryFromCriteria), kept
+  // out of this class. Shares the fieldRegistry by reference.
+  private prefiller: FormPrefiller = new FormPrefiller(this.fieldRegistry);
 
   constructor(settings: ISettings) {
     // this is a root component : Does not have a ParentComponent!
@@ -231,6 +245,9 @@ class SparnaturalFormComponent extends HTMLComponent {
             this.#initSparnaturalFormStaticLabels(formConfig);
             console.log("Form configuration loaded successfully:", formConfig);
 
+            // Reset the field registry before (re)generating the fields
+            this.fieldRegistry.clear();
+
             // Génération des champs du formulaire
             formConfig.bindings.forEach((binding: Binding) => {
               const fieldGenerator = new FormField(
@@ -240,6 +257,7 @@ class SparnaturalFormComponent extends HTMLComponent {
                 this.jsonQuery,
                 new WidgetFactory(this, this.specProvider, this.settings, null),
                 formConfig,
+                this.fieldRegistry,
               );
               fieldGenerator.generateField();
             });
@@ -259,6 +277,9 @@ class SparnaturalFormComponent extends HTMLComponent {
 
               this.SubmitSection.render();
             }
+
+            // Apply any prefill / raw criteria requested before the form was ready
+            this.prefiller.applyPending();
 
             // fire init event at the end
             this.html[0].dispatchEvent(
@@ -328,6 +349,26 @@ class SparnaturalFormComponent extends HTMLComponent {
     // Recréer le formulaire en appelant la méthode `render`
     this.render();
     console.log("Form reset and re-rendered successfully.");
+  }
+
+  /**
+   * Pre-fills the form with a "flat" query : a mapping from form variable to a
+   * single value to pre-select for that field. Delegated to {@link FormPrefiller}.
+   *
+   * @param values the flat query values, keyed by form variable
+   */
+  public loadQuery(values: FlatQueryValues) {
+    this.prefiller.loadQuery(values);
+  }
+
+  /**
+   * Pre-fills the form from "raw" criteria : a mapping from a form variable
+   * (column name) to a single raw string value (typically read from the page
+   * URL). Delegated to {@link FormPrefiller}.
+   * @param values the raw values, keyed by form variable
+   */
+  public loadQueryFromCriteria(values: RawQueryValues) {
+    this.prefiller.loadQueryFromCriteria(values);
   }
 
   /**

@@ -511,4 +511,24 @@ sparnatural-form {
   .jstree-leaf {
     padding-right: 30px;
   }
+
+  // Predefined-queries dropdown
+  .predefined-queries-container {
+    padding-left: 20px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+  }
+
+  .predefined-queries-select,
+  #predefined-queries-select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
 }
