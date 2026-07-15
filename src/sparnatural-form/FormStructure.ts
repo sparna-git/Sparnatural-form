@@ -43,11 +43,11 @@ export interface FlatQueryValues {
 }
 
 /**
- * A "raw" query : a mapping from a form variable (column name) to a single
- * raw string value
+ * A "raw" query : a mapping from a form variable (column name) to a raw string
+ * value, or an array of raw values for multi-value fields (repeated URL param).
  */
 export interface RawQueryValues {
-  [variable: string]: string;
+  [variable: string]: string | string[];
 }
 
 /**

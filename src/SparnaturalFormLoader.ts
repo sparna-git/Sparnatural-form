@@ -1,12 +1,14 @@
 // Minimal shape of the element
 interface FormElementLike extends HTMLElement {
   loadQuery(values: Record<string, any>): void;
-  loadQueryFromCriteria(criteria: Record<string, string>): void;
+  loadQueryFromCriteria(criteria: Record<string, string | string[]>): void;
 }
 
 export interface SparnaturalFormLoaderOptions {
   // URL params to ignore when prefilling (page-level params).
   reservedParams?: string[];
+  // URL param holding a full JSON query to load (defaults to "query").
+  queryParam?: string;
   // id of the config element holding data-queries (defaults to "predefined-queries").
   predefinedQueriesId?: string;
   // placeholder label for the dropdown (defaults to a FR/EN guess from <html lang>).
@@ -27,6 +29,7 @@ export class SparnaturalFormLoader {
     const lang = document.documentElement.getAttribute("lang") || "en";
     this.options = {
       reservedParams: options.reservedParams ?? ["lang"],
+      queryParam: options.queryParam ?? "query",
       predefinedQueriesId: options.predefinedQueriesId ?? "predefined-queries",
       placeholder:
         options.placeholder ??
@@ -46,11 +49,30 @@ export class SparnaturalFormLoader {
   }
 
   // Reads URL params (minus reserved ones) and prefills the form.
+  // Two modes, checked in order :
+  //  - ?query=<encoded JSON> : a full {variable:{label,criteria}} structure ;
+  //  - ?Var=value&... : one raw value per variable (repeated param = array).
   prefillFromUrl(): void {
     const params = new URLSearchParams(window.location.search);
-    const criteria: Record<string, string> = {};
-    params.forEach((value, key) => {
-      if (!this.options.reservedParams.includes(key)) criteria[key] = value;
+
+    const rawQuery = params.get(this.options.queryParam);
+    if (rawQuery) {
+      try {
+        this.form.loadQuery(JSON.parse(rawQuery));
+      } catch (e) {
+        console.error(
+          `SparnaturalFormLoader: invalid JSON in "${this.options.queryParam}" URL param.`,
+          e,
+        );
+      }
+      return;
+    }
+
+    const criteria: Record<string, string | string[]> = {};
+    new Set(params.keys()).forEach((key) => {
+      if (this.options.reservedParams.includes(key)) return;
+      const all = params.getAll(key);
+      criteria[key] = all.length > 1 ? all : all[0];
     });
     if (Object.keys(criteria).length > 0) {
       this.form.loadQueryFromCriteria(criteria);

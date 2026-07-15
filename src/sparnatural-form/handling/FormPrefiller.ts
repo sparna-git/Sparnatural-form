@@ -118,52 +118,64 @@ export class FormPrefiller {
         );
         return;
       }
-      if (raw == null || raw === "") {
-        return;
-      }
 
-      const widget = field.widget;
-
-      if (FormPrefiller.isHttpUri(raw)) {
-        // IRI : widget resolves its label via SPARQL (async, generation-guarded).
-        widget.resolveLabel(
-          raw,
-          (value) => {
-            if (generation !== this.generation) return;
-            // Fall back to the URI as label when none was resolved.
-            const finalValue = value ?? {
-              label: raw,
-              criteria: { rdfTerm: { type: "uri", value: raw } },
-            };
-            widget.triggerRenderWidgetVal(finalValue);
-          },
-          (error) => {
-            if (generation !== this.generation) return;
-            console.error(
-              `loadQueryFromCriteria: label resolution failed for "${variable}" (${raw}), using URI as label.`,
-              error,
-            );
-            widget.triggerRenderWidgetVal({
-              label: raw,
-              criteria: { rdfTerm: { type: "uri", value: raw } },
-            });
-          },
-        );
-      } else {
-        // Non-IRI : let the widget parse the raw value into its criteria.
-        try {
-          const criteria = widget.parseRawValue(raw);
-          widget.triggerRenderWidgetVal(
-            widget.buildValueFromCriteria(criteria),
-          );
-        } catch (e) {
-          console.error(
-            `loadQueryFromCriteria: failed to parse value "${raw}" for "${variable}", skipping.`,
-            e,
-          );
-        }
-      }
+      // Repeated URL param (e.g. ?TypeActor=uri1&TypeActor=uri2) → apply each.
+      // The widget stacks them if it is multi-value, ignores extras if single.
+      const rawValues = Array.isArray(raw) ? raw : [raw];
+      rawValues.forEach((value) => {
+        this.applyRawValue(field.widget, variable, value, generation);
+      });
     });
+  }
+
+  // Applies one raw value to a widget, resolving IRIs or parsing literals.
+  private applyRawValue(
+    widget: FieldHandle["widget"],
+    variable: string,
+    raw: string,
+    generation: number,
+  ): void {
+    if (raw == null || raw === "") {
+      return;
+    }
+
+    if (FormPrefiller.isHttpUri(raw)) {
+      // IRI : widget resolves its label via SPARQL (async, generation-guarded).
+      widget.resolveLabel(
+        raw,
+        (value) => {
+          if (generation !== this.generation) return;
+          // Fall back to the URI as label when none was resolved.
+          const finalValue = value ?? {
+            label: raw,
+            criteria: { rdfTerm: { type: "uri", value: raw } },
+          };
+          widget.triggerRenderWidgetVal(finalValue);
+        },
+        (error) => {
+          if (generation !== this.generation) return;
+          console.error(
+            `loadQueryFromCriteria: label resolution failed for "${variable}" (${raw}), using URI as label.`,
+            error,
+          );
+          widget.triggerRenderWidgetVal({
+            label: raw,
+            criteria: { rdfTerm: { type: "uri", value: raw } },
+          });
+        },
+      );
+    } else {
+      // Non-IRI : let the widget parse the raw value into its criteria.
+      try {
+        const criteria = widget.parseRawValue(raw);
+        widget.triggerRenderWidgetVal(widget.buildValueFromCriteria(criteria));
+      } catch (e) {
+        console.error(
+          `loadQueryFromCriteria: failed to parse value "${raw}" for "${variable}", skipping.`,
+          e,
+        );
+      }
+    }
   }
 
   // True if the raw value is an HTTP(S) IRI (needs label resolution).
