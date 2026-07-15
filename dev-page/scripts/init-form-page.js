@@ -42,16 +42,8 @@ function buildPredefinedQueriesDropdown() {
   const url = config.getAttribute("data-queries");
   if (!url) return;
 
-  // The form's scrollable fields container, created once the form is rendered.
-  const formContainer = sparnaturalForm.querySelector(
-    ".sparnatural-form-container",
-  );
-  if (!formContainer) {
-    console.warn(
-      "Form container not found, cannot insert predefined queries dropdown",
-    );
-    return;
-  }
+  // Render outside the form, inside the #predefined-queries div itself.
+  const host = config;
 
   fetch(url)
     .then((response) => {
@@ -99,12 +91,10 @@ function buildPredefinedQueriesDropdown() {
 
       container.appendChild(select);
 
-      // Avoid duplicates on re-render, then insert at the top of the form fields
-      const existing = formContainer.querySelector(
-        ".predefined-queries-container",
-      );
+      // Avoid duplicates on re-render, then render inside #predefined-queries
+      const existing = host.querySelector(".predefined-queries-container");
       if (existing) existing.remove();
-      formContainer.insertBefore(container, formContainer.firstChild);
+      host.appendChild(container);
     })
     .catch((error) => {
       console.error("Unable to load predefined queries file: " + url, error);

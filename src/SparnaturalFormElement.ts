@@ -177,3 +177,9 @@ customElements.get(SparnaturalFormElement.HTML_ELEMENT_NAME) ||
     SparnaturalFormElement.HTML_ELEMENT_NAME,
     SparnaturalFormElement,
   );
+
+// Independent loader (URL prefill + predefined-queries dropdown)
+// new SparnaturalFormLoader(document.querySelector("sparnatural-form")).init();
+import { SparnaturalFormLoader } from "./SparnaturalFormLoader";
+(window as any).SparnaturalFormLoader = SparnaturalFormLoader;
+export { SparnaturalFormLoader };
