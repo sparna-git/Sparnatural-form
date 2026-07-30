@@ -9,8 +9,10 @@ interface FormElementLike extends HTMLElement {
 }
 
 // One entry of the queries file : a label + the flat values to prefill.
+// The label is either a plain string, or an object keyed by language code
+// (e.g. { fr: "...", en: "..." }) resolved against the "lang" attribute.
 interface PredefinedQuery {
-  label: string;
+  label: string | Record<string, string>;
   values: FlatQueryValues;
 }
 
@@ -18,8 +20,6 @@ interface PredefinedQuery {
 const PLACEHOLDERS: Record<string, string> = {
   fr: "Charger une requête d'exemple...",
   en: "Load example query...",
-  de: "Beispielabfrage laden...",
-  it: "Carica una query di esempio...",
 };
 
 // URL params that are never form fields.
@@ -114,6 +114,14 @@ export class SparnaturalFormQueriesElement extends HTMLElement {
     return PLACEHOLDERS[this.langCode] ?? PLACEHOLDERS.en;
   }
 
+  // Resolves a query label to a string : a plain string is returned as is ;
+  // an object keyed by language falls back lang → en → first available.
+  private resolveLabel(label: PredefinedQuery["label"]): string {
+    if (typeof label === "string") return label;
+    if (!label || typeof label !== "object") return "";
+    return label[this.langCode] ?? label.en ?? Object.values(label)[0] ?? "";
+  }
+
   // Reads the current page URL and pre-fills the target form, then submits it
   // automatically (unless ?exec=false). Two modes, checked in order :
   //  - ?query=<encoded JSON> : a full {variable:{label,criteria}} structure ;
@@ -185,7 +193,7 @@ export class SparnaturalFormQueriesElement extends HTMLElement {
     this.queries.forEach((q, i) => {
       const opt = document.createElement("option");
       opt.value = String(i);
-      opt.textContent = q.label;
+      opt.textContent = this.resolveLabel(q.label);
       select.appendChild(opt);
     });
 
