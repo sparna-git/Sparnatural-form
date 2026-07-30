@@ -1,0 +1,54 @@
+{
+  "bindings": [
+    {
+      "variable": "Title",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Title (regex)",
+          "fr": "Title (regex)"
+        }
+      }
+    },
+    {
+      "variable": "Actor_18",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Person/Group (Uri)",
+          "fr": "Person/Group (Uri)"
+        }
+      }
+    },
+    {
+      "variable": "ActorName",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Person/Group (regex)",
+          "fr": "Person/Group (regex)"
+        }
+      }
+    },
+    {
+      "variable": "Activity_Type_22",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Type of Activity",
+          "fr": "Type d'Activité"
+        }
+      }
+    },
+    {
+      "variable": "Saison",
+      "node": {
+        "type": "UserPrompt",
+        "name": {
+          "en": "Season",
+          "fr": "Saison"
+        }
+      }
+    }
+  ]
+}

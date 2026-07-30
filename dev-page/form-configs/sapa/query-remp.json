@@ -1,0 +1,38 @@
+{
+  "queries": [
+    {
+      "label": "Productions",
+      "values": {
+        "Activity_Type_22": {
+          "label": "production",
+          "criteria": {
+            "rdfTerm": {
+              "type": "uri",
+              "value": "http://vocab.performing-arts.ch/muwgo"
+            }
+          }
+        }
+      }
+    },
+    {
+      "label": "Productions de la saison 2020",
+      "values": {
+        "Activity_Type_22": {
+          "label": "production",
+          "criteria": {
+            "rdfTerm": {
+              "type": "uri",
+              "value": "http://vocab.performing-arts.ch/muwgo"
+            }
+          }
+        },
+        "Saison": {
+          "label": "2020",
+          "criteria": {
+            "search": "2020"
+          }
+        }
+      }
+    }
+  ]
+}

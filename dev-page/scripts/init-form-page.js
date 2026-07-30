@@ -20,86 +20,9 @@ sparnaturalForm.addEventListener("init", (event) => {
     }
   }
 
-  // Step 2 : pre-fill the form from the page URL.
-  const RESERVED_PARAMS = ["lang"];
-  const criteria = {};
-  urlParams.forEach((value, key) => {
-    if (!RESERVED_PARAMS.includes(key)) criteria[key] = value;
-  });
-  if (Object.keys(criteria).length > 0) {
-    console.log("Pre-filling form from URL with criteria:", criteria);
-    sparnaturalForm.loadQueryFromCriteria(criteria);
-  }
-
-  // Step 1 : predefined-queries dropdown, fully handled by the page.
-  buildPredefinedQueriesDropdown();
+  // URL pre-filling (+ auto-submit) and the predefined-queries dropdown are
+  // handled by the <sparnatural-form-queries> web component on the page.
 });
-
-// Builds a <select> listing the predefined queries
-function buildPredefinedQueriesDropdown() {
-  const config = document.getElementById("predefined-queries");
-  if (!config) return;
-  const url = config.getAttribute("data-queries");
-  if (!url) return;
-
-  // Render outside the form, inside the #predefined-queries div itself.
-  const host = config;
-
-  fetch(url)
-    .then((response) => {
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-      return response.json();
-    })
-    .then((data) => {
-      const queries = data && Array.isArray(data.queries) ? data.queries : [];
-
-      const container = document.createElement("div");
-      container.classList.add("predefined-queries-container");
-
-      const select = document.createElement("select");
-      select.id = "predefined-queries-select";
-      select.classList.add("predefined-queries-select");
-
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent =
-        lang === "en"
-          ? "Load example query..."
-          : "Charger une requête d'exemple...";
-      select.appendChild(placeholder);
-
-      queries.forEach((query, index) => {
-        const option = document.createElement("option");
-        option.value = String(index);
-        option.textContent = query.label;
-        select.appendChild(option);
-      });
-
-      select.addEventListener("change", () => {
-        const index = parseInt(select.value, 10);
-        if (Number.isNaN(index)) {
-          // Placeholder selected → reset the form (load empty values)
-          sparnaturalForm.loadQuery({});
-          return;
-        }
-        const query = queries[index];
-        if (query) sparnaturalForm.loadQuery(query.values);
-        // Reset to placeholder so re-selecting the same example fires change again
-        select.value = "";
-      });
-
-      container.appendChild(select);
-
-      // Avoid duplicates on re-render, then render inside #predefined-queries
-      const existing = host.querySelector(".predefined-queries-container");
-      if (existing) existing.remove();
-      host.appendChild(container);
-    })
-    .catch((error) => {
-      console.error("Unable to load predefined queries file: " + url, error);
-    });
-}
 
 // Listen for updates to the query and pass to YASQE
 sparnaturalForm.addEventListener("queryUpdated", (event) => {

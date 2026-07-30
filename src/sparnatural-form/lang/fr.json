@@ -3,5 +3,6 @@
   "Reset": "Réinitialiser",
   "messageSingleValue": "Vous devez supprimer la valeur précédente avant d'en ajouter une nouvelle.",
   "AnyValue": "N'importe quelle valeur",
-  "NotExist": "Valeur inconnue"
+  "NotExist": "Valeur inconnue",
+  "LoadExampleQuery": "Charger une requête d'exemple..."
 }

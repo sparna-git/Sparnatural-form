@@ -115,6 +115,25 @@ class OptionalCriteriaManager {
     this.updateOptionVisibility();
   }
 
+  // Programmatically activates the "Unknown" (not exist) option, exactly as if
+  // the user had ticked its toggle (sets branch flags, pill, disables widget).
+  // Used by the prefiller for the UNKNOWN URL keyword. No-op if unavailable.
+  public activateNotExist(): boolean {
+    if (!this.notExistToggle || this.notExistToggle.checked) return false;
+    this.notExistToggle.checked = true;
+    this.notExistToggle.dispatchEvent(new Event("change"));
+    return true;
+  }
+
+  // Programmatically activates the "Any known value" option, as if the user had
+  // ticked its toggle. Used by the prefiller for the ANY URL keyword.
+  public activateAnyValue(): boolean {
+    if (!this.anyValueToggle || this.anyValueToggle.checked) return false;
+    this.anyValueToggle.checked = true;
+    this.anyValueToggle.dispatchEvent(new Event("change"));
+    return true;
+  }
+
   /**
    * Updates the visibility and enabled state of "Any value" and "Not Exist" options.
    */

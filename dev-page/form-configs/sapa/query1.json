@@ -1,0 +1,200 @@
+{
+  "distinct": true,
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "Production"
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "Saison"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "Season"
+      }
+    },
+    {
+      "expression": {
+        "type": "aggregate",
+        "aggregation": "group_concat",
+        "distinct": false,
+        "expression": {
+          "termType": "Variable",
+          "value": "Producer_1"
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "Producer"
+      }
+    }
+  ],
+  "order": null,
+  "branches": [
+    {
+      "line": {
+        "s": "Production",
+        "p": "http://shapes.performing-arts.ch/sparnatural/F25_Performance_Plan_inverse_R25_performed",
+        "o": "Performance_Serie_2",
+        "sType": "http://shapes.performing-arts.ch/performances/F25_Performance_Plan",
+        "oType": "http://shapes.performing-arts.ch/performances/Performance_Serie",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Performance_Serie_2",
+            "p": "http://shapes.performing-arts.ch/performances/Performance_Serie_P10_falls_within",
+            "o": "E4_Period_4",
+            "sType": "http://shapes.performing-arts.ch/performances/Performance_Serie",
+            "oType": "http://shapes.performing-arts.ch/performances/E4_Period",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "E4_Period_4",
+                "p": "http://shapes.performing-arts.ch/performances/E4_Period_label",
+                "o": "Saison",
+                "sType": "http://shapes.performing-arts.ch/performances/E4_Period",
+                "oType": "http://special/Z_Text",
+                "criterias": []
+              }
+            }
+          ]
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Production",
+        "p": "http://shapes.performing-arts.ch/sparnatural/F25_Performance_Plan_inverse_R17_created",
+        "o": "Creation_of_Performance_Plan_8",
+        "sType": "http://shapes.performing-arts.ch/performances/F25_Performance_Plan",
+        "oType": "http://shapes.performing-arts.ch/performances/Creation_of_Performance_Plan",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Creation_of_Performance_Plan_8",
+            "p": "http://shapes.performing-arts.ch/performances/Creation_of_Performance_Plan_P9_consists_of",
+            "o": "Activity_Participation_10",
+            "sType": "http://shapes.performing-arts.ch/performances/Creation_of_Performance_Plan",
+            "oType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Activity_Participation_10",
+                "p": "http://shapes.performing-arts.ch/performances/Activity_Participation_P2_has_type",
+                "o": "Activity_Type_12",
+                "sType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+                "oType": "http://shapes.performing-arts.ch/performances/Activity_Type",
+                "criterias": [
+                  {
+                    "label": "production",
+                    "criteria": {
+                      "rdfTerm": {
+                        "type": "uri",
+                        "value": "http://vocab.performing-arts.ch/muwgo"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "line": {
+                "s": "Activity_Participation_10",
+                "p": "http://shapes.performing-arts.ch/sparnatural/Activity_participation_carried_out_by_Agent",
+                "o": "Producer_1",
+                "sType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+                "oType": "http://shapes.performing-arts.ch/sparnatural/Actor",
+                "criterias": []
+              }
+            }
+          ]
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Production",
+        "p": "http://shapes.performing-arts.ch/sparnatural/F25_Performance_Plan_person_activities",
+        "o": "Activity_Participation_16",
+        "sType": "http://shapes.performing-arts.ch/performances/F25_Performance_Plan",
+        "oType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "Activity_Participation_16",
+            "p": "http://shapes.performing-arts.ch/sparnatural/Activity_participation_carried_out_by_Agent",
+            "o": "Actor_18",
+            "sType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+            "oType": "http://shapes.performing-arts.ch/sparnatural/Actor",
+            "criterias": []
+          },
+          "children": [
+            {
+              "line": {
+                "s": "Actor_18",
+                "p": "http://shapes.performing-arts.ch/sparnatural/Actor_label",
+                "o": "ActorName",
+                "sType": "http://shapes.performing-arts.ch/sparnatural/Actor",
+                "oType": "http://special/Z_Text",
+                "criterias": []
+              }
+            }
+          ]
+        },
+        {
+          "line": {
+            "s": "Activity_Participation_16",
+            "p": "http://shapes.performing-arts.ch/performances/Activity_Participation_P2_has_type",
+            "o": "Activity_Type_22",
+            "sType": "http://shapes.performing-arts.ch/performances/Activity_Participation",
+            "oType": "http://shapes.performing-arts.ch/performances/Activity_Type",
+            "criterias": []
+          }
+        }
+      ],
+      "optional": true
+    },
+    {
+      "line": {
+        "s": "Production",
+        "p": "http://shapes.performing-arts.ch/performances/F25_Performance_Plan_P102_has_title",
+        "o": "E35_Title_24",
+        "sType": "http://shapes.performing-arts.ch/performances/F25_Performance_Plan",
+        "oType": "http://shapes.performing-arts.ch/performances/E35_Title",
+        "criterias": []
+      },
+      "children": [
+        {
+          "line": {
+            "s": "E35_Title_24",
+            "p": "http://shapes.performing-arts.ch/performances/E35_Title_value",
+            "o": "Title",
+            "sType": "http://shapes.performing-arts.ch/performances/E35_Title",
+            "oType": "http://special/Z_Text",
+            "criterias": []
+          }
+        }
+      ]
+    }
+  ],
+  "limit": 1000
+}

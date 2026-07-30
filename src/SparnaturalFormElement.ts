@@ -136,6 +136,17 @@ export class SparnaturalFormElement extends HTMLElement {
     this.sparnaturalForm.loadQueryFromCriteria(criteria);
   }
 
+  // Promise resolved once the last loadQueryFromCriteria() call is fully applied
+  // (including async IRI label resolution). Used to auto-submit after prefill.
+  whenPrefillApplied(): Promise<void> {
+    return this.sparnaturalForm.whenPrefillApplied();
+  }
+
+  // Programmatically triggers a form submit (as if Search was clicked).
+  triggerSubmit() {
+    this.sparnaturalForm.triggerSubmit();
+  }
+
   enablePlayBtn() {
     this.sparnaturalForm.enablePlayBtn();
   }
@@ -177,9 +188,11 @@ customElements.get(SparnaturalFormElement.HTML_ELEMENT_NAME) ||
     SparnaturalFormElement.HTML_ELEMENT_NAME,
     SparnaturalFormElement,
   );
-
-// Independent loader (URL prefill + predefined-queries dropdown)
-// new SparnaturalFormLoader(document.querySelector("sparnatural-form")).init();
-import { SparnaturalFormLoader } from "./SparnaturalFormLoader";
-(window as any).SparnaturalFormLoader = SparnaturalFormLoader;
-export { SparnaturalFormLoader };
+// <sparnatural-form-queries> web component (predefined-queries dropdown).
+// Registered explicitly so it survives "sideEffects": false tree-shaking.
+import {
+  SparnaturalFormQueriesElement,
+  defineSparnaturalFormQueriesElement,
+} from "./SparnaturalFormQueriesElement";
+defineSparnaturalFormQueriesElement();
+export { SparnaturalFormQueriesElement };

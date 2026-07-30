@@ -3,5 +3,6 @@
   "Reset": "Reset",
   "messageSingleValue": "You must remove the previous value before adding a new one.",
   "AnyValue": "Any known value",
-  "NotExist": "Unknown"
+  "NotExist": "Unknown",
+  "LoadExampleQuery": "Load example query..."
 }

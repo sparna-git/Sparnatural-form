@@ -70,11 +70,12 @@
       <div class="row">
         <!-- Formulaire à gauche -->
         <div class="col-md-4">
-          <!-- Dropdown des requêtes prédéfinies -->
-          <div
-            id="predefined-queries"
-            data-queries="./form-configs/sapa/query-remp.json"
-          ></div>
+          <!-- Prefill URL + auto-submit + dropdown des requêtes prédéfinies (web component) -->
+          <sparnatural-form-queries
+            src="./form-configs/sapa/query-remp.json"
+            lang="fr"
+            for="sapa-form"
+          ></sparnatural-form-queries>
 
           <!-- Sparnatural Form -->
           <!-- <sparnatural-form
@@ -89,6 +90,7 @@
           ></sparnatural-form>-->
 
           <sparnatural-form
+            id="sapa-form"
             src="form-configs/sapa/autorites-shacl.ttl form-configs/sapa/collections-shacl.ttl form-configs/sapa/instantiations-shacl.ttl form-configs/sapa/performances-shacl.ttl form-configs/sapa/sparnatural-extension.ttl"
             lang="fr"
             defaultLang="fr"

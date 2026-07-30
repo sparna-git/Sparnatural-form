@@ -372,6 +372,22 @@ class SparnaturalFormComponent extends HTMLComponent {
   }
 
   /**
+   * Promise that settles once the last loadQueryFromCriteria() call has been
+   * fully applied, including async IRI label resolution. Used to auto-submit.
+   */
+  public whenPrefillApplied(): Promise<void> {
+    return this.prefiller.whenRawCriteriaApplied();
+  }
+
+  /**
+   * Programmatically triggers a form submit (as if the Search button was
+   * clicked). No-op if the submit section is not rendered.
+   */
+  public triggerSubmit() {
+    this.SubmitSection?.submitAction();
+  }
+
+  /**
    * Reads and parse the configuration provided in the "src" attribute, and fires a callback when ready
    * @param callback the function that is called with the ISpecificationProvider instance created after reading the config
    */

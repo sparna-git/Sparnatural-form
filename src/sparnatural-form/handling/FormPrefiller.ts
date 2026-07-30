@@ -1,6 +1,13 @@
 import { FieldHandle } from "../components/FormField";
 import { FlatQueryValues, RawQueryValues } from "../FormStructure";
 
+// Keywords a URL raw value can use instead of an actual value :
+//  - UNKNOWN : the field has no value (SPARQL "Unknown" / not exist) ;
+//  - ANY     : the field has any known value ("Any known value").
+// Case-insensitive. See applyRawValue().
+const KEYWORD_UNKNOWN = "UNKNOWN";
+const KEYWORD_ANY = "ANY";
+
 export class FormPrefiller {
   private fieldRegistry: Map<string, FieldHandle>;
 
@@ -11,8 +18,19 @@ export class FormPrefiller {
   // Bumped on every apply*(); late async resolutions of an older generation are ignored.
   private generation = 0;
 
+  // Resolves once the last requested raw-criteria prefill has fully settled
+  // (including async IRI label resolution). Used to auto-submit afterwards.
+  private rawCriteriaDone: Promise<void> = Promise.resolve();
+  private pendingResolve: (() => void) | null = null;
+  private pendingCount = 0;
+
   constructor(fieldRegistry: Map<string, FieldHandle>) {
     this.fieldRegistry = fieldRegistry;
+  }
+
+  // Promise that settles when the current raw-criteria prefill is fully applied.
+  whenRawCriteriaApplied(): Promise<void> {
+    return this.rawCriteriaDone;
   }
 
   // Applies any prefill/criteria queued before render. Called by the component.
@@ -55,9 +73,14 @@ export class FormPrefiller {
       return;
     }
 
-    // Not rendered yet : queue and apply in applyPending().
+    // Not rendered yet : queue and apply in applyPending(). Set up the "done"
+    // promise now so whenRawCriteriaApplied() reflects this request even if it
+    // is queried before the form finishes rendering.
     if (this.fieldRegistry.size === 0) {
       this.pendingRawCriteria = values;
+      this.rawCriteriaDone = new Promise<void>((resolve) => {
+        this.pendingResolve = resolve;
+      });
       return;
     }
 
@@ -84,7 +107,7 @@ export class FormPrefiller {
     this.generation++;
 
     Object.entries(values).forEach(([variable, value]) => {
-      const field = this.fieldRegistry.get(variable);
+      const field = this.findField(variable);
       if (!field) {
         console.warn(
           `loadQuery: no form field found for variable "${variable}", skipping`,
@@ -110,8 +133,17 @@ export class FormPrefiller {
     this.clearAllFields();
     const generation = ++this.generation;
 
+    // "done" promise for this prefill ; resolved when pendingCount hits 0.
+    // Reuse the resolver set up by the queued path, otherwise make a fresh one.
+    this.pendingCount = 0;
+    if (!this.pendingResolve) {
+      this.rawCriteriaDone = new Promise<void>((resolve) => {
+        this.pendingResolve = resolve;
+      });
+    }
+
     Object.entries(values).forEach(([variable, raw]) => {
-      const field = this.fieldRegistry.get(variable);
+      const field = this.findField(variable);
       if (!field) {
         console.warn(
           `loadQueryFromCriteria: no form field found for variable "${variable}", skipping`,
@@ -123,14 +155,30 @@ export class FormPrefiller {
       // The widget stacks them if it is multi-value, ignores extras if single.
       const rawValues = Array.isArray(raw) ? raw : [raw];
       rawValues.forEach((value) => {
-        this.applyRawValue(field.widget, variable, value, generation);
+        this.applyRawValue(field, variable, value, generation);
       });
     });
+
+    // Nothing async was queued → settle immediately.
+    if (this.pendingCount === 0) this.settleRawCriteria();
   }
 
-  // Applies one raw value to a widget, resolving IRIs or parsing literals.
+  // Looks up a field by variable, first exactly then case-insensitively so a URL
+  // param like ?season=... matches a "Season" field.
+  private findField(variable: string): FieldHandle | undefined {
+    const exact = this.fieldRegistry.get(variable);
+    if (exact) return exact;
+    const lower = variable.toLowerCase();
+    for (const [key, field] of this.fieldRegistry) {
+      if (key.toLowerCase() === lower) return field;
+    }
+    return undefined;
+  }
+
+  // Applies one raw value to a field, handling UNKNOWN/ANY keywords, IRIs and
+  // literals. Async IRI resolution is tracked so we know when everything settled.
   private applyRawValue(
-    widget: FieldHandle["widget"],
+    field: FieldHandle,
     variable: string,
     raw: string,
     generation: number,
@@ -139,29 +187,53 @@ export class FormPrefiller {
       return;
     }
 
+    // UNKNOWN / ANY keywords → drive the "Unknown" / "Any known value" options
+    // instead of setting a widget value.
+    const keyword = raw.trim().toUpperCase();
+    if (keyword === KEYWORD_UNKNOWN || keyword === KEYWORD_ANY) {
+      const manager = field.optionalCriteriaManager;
+      const applied =
+        keyword === KEYWORD_UNKNOWN
+          ? manager?.activateNotExist()
+          : manager?.activateAnyValue();
+      if (!applied) {
+        console.warn(
+          `loadQueryFromCriteria: "${raw}" requested for "${variable}" but this field has no Unknown/Any option, skipping`,
+        );
+      }
+      return;
+    }
+
+    const widget = field.widget;
+
     if (FormPrefiller.isHttpUri(raw)) {
       // IRI : widget resolves its label via SPARQL (async, generation-guarded).
+      this.pendingCount++;
       widget.resolveLabel(
         raw,
         (value) => {
-          if (generation !== this.generation) return;
-          // Fall back to the URI as label when none was resolved.
-          const finalValue = value ?? {
-            label: raw,
-            criteria: { rdfTerm: { type: "uri", value: raw } },
-          };
-          widget.triggerRenderWidgetVal(finalValue);
+          if (generation === this.generation) {
+            // Fall back to the URI as label when none was resolved.
+            const finalValue = value ?? {
+              label: raw,
+              criteria: { rdfTerm: { type: "uri", value: raw } },
+            };
+            widget.triggerRenderWidgetVal(finalValue);
+          }
+          this.onRawValueSettled();
         },
         (error) => {
-          if (generation !== this.generation) return;
-          console.error(
-            `loadQueryFromCriteria: label resolution failed for "${variable}" (${raw}), using URI as label.`,
-            error,
-          );
-          widget.triggerRenderWidgetVal({
-            label: raw,
-            criteria: { rdfTerm: { type: "uri", value: raw } },
-          });
+          if (generation === this.generation) {
+            console.error(
+              `loadQueryFromCriteria: label resolution failed for "${variable}" (${raw}), using URI as label.`,
+              error,
+            );
+            widget.triggerRenderWidgetVal({
+              label: raw,
+              criteria: { rdfTerm: { type: "uri", value: raw } },
+            });
+          }
+          this.onRawValueSettled();
         },
       );
     } else {
@@ -175,6 +247,19 @@ export class FormPrefiller {
           e,
         );
       }
+    }
+  }
+
+  // Called when one async IRI resolution finished ; settles when all are done.
+  private onRawValueSettled(): void {
+    this.pendingCount--;
+    if (this.pendingCount <= 0) this.settleRawCriteria();
+  }
+
+  private settleRawCriteria(): void {
+    if (this.pendingResolve) {
+      this.pendingResolve();
+      this.pendingResolve = null;
     }
   }
 
