@@ -135,7 +135,10 @@ export class FormPrefiller {
 
     // "done" promise for this prefill ; resolved when pendingCount hits 0.
     // Reuse the resolver set up by the queued path, otherwise make a fresh one.
-    this.pendingCount = 0;
+    // Starts at 1 : that guard keeps the promise pending while the loop below is
+    // still queueing values (widgets may call back synchronously), and is
+    // released right after the loop.
+    this.pendingCount = 1;
     if (!this.pendingResolve) {
       this.rawCriteriaDone = new Promise<void>((resolve) => {
         this.pendingResolve = resolve;
@@ -159,8 +162,8 @@ export class FormPrefiller {
       });
     });
 
-    // Nothing async was queued → settle immediately.
-    if (this.pendingCount === 0) this.settleRawCriteria();
+    // Every value is queued : release the guard (settles now if nothing is left).
+    this.onRawValueSettled(generation);
   }
 
   // Looks up a field by variable, first exactly then case-insensitively so a URL
@@ -175,8 +178,9 @@ export class FormPrefiller {
     return undefined;
   }
 
-  // Applies one raw value to a field, handling UNKNOWN/ANY keywords, IRIs and
-  // literals. Async IRI resolution is tracked so we know when everything settled.
+  // Applies one raw value to a field, handling the UNKNOWN/ANY keywords. The
+  // widget itself turns the raw value into a criteria (parsing it or resolving
+  // its label) ; we only track when each value has settled.
   private applyRawValue(
     field: FieldHandle,
     variable: string,
@@ -206,52 +210,32 @@ export class FormPrefiller {
 
     const widget = field.widget;
 
-    if (FormPrefiller.isHttpUri(raw)) {
-      // IRI : widget resolves its label via SPARQL (async, generation-guarded).
-      this.pendingCount++;
-      widget.resolveLabel(
-        raw,
-        (value) => {
-          if (generation === this.generation) {
-            // Fall back to the URI as label when none was resolved.
-            const finalValue = value ?? {
-              label: raw,
-              criteria: { rdfTerm: { type: "uri", value: raw } },
-            };
-            widget.triggerRenderWidgetVal(finalValue);
-          }
-          this.onRawValueSettled();
-        },
-        (error) => {
-          if (generation === this.generation) {
-            console.error(
-              `loadQueryFromCriteria: label resolution failed for "${variable}" (${raw}), using URI as label.`,
-              error,
-            );
-            widget.triggerRenderWidgetVal({
-              label: raw,
-              criteria: { rdfTerm: { type: "uri", value: raw } },
-            });
-          }
-          this.onRawValueSettled();
-        },
-      );
-    } else {
-      // Non-IRI : let the widget parse the raw value into its criteria.
-      try {
-        const criteria = widget.parseRawValue(raw);
-        widget.triggerRenderWidgetVal(widget.buildValueFromCriteria(criteria));
-      } catch (e) {
+    // Ask the widget to build the value : it knows whether it holds URIs (label
+    // resolved via SPARQL, async) or literals (parsed locally, synchronous).
+    // Late callbacks from an older prefill are dropped by the generation guard.
+    this.pendingCount++;
+    widget.buildValueFromRawValue(
+      raw,
+      (value) => {
+        if (generation === this.generation) {
+          widget.triggerRenderWidgetVal(value);
+        }
+        this.onRawValueSettled(generation);
+      },
+      (error) => {
         console.error(
-          `loadQueryFromCriteria: failed to parse value "${raw}" for "${variable}", skipping.`,
-          e,
+          `loadQueryFromCriteria: could not apply value "${raw}" to "${variable}", skipping.`,
+          error,
         );
-      }
-    }
+        this.onRawValueSettled(generation);
+      },
+    );
   }
 
-  // Called when one async IRI resolution finished ; settles when all are done.
-  private onRawValueSettled(): void {
+  // Called when one value has been applied ; settles when all are done.
+  // Callbacks from a superseded prefill must not decrement the current count.
+  private onRawValueSettled(generation: number): void {
+    if (generation !== this.generation) return;
     this.pendingCount--;
     if (this.pendingCount <= 0) this.settleRawCriteria();
   }
@@ -260,18 +244,6 @@ export class FormPrefiller {
     if (this.pendingResolve) {
       this.pendingResolve();
       this.pendingResolve = null;
-    }
-  }
-
-  // True if the raw value is an HTTP(S) IRI (needs label resolution).
-  private static isHttpUri(value: string): boolean {
-    if (typeof value !== "string") return false;
-    if (!/^https?:\/\//i.test(value)) return false;
-    try {
-      const url = new URL(value);
-      return url.protocol === "http:" || url.protocol === "https:";
-    } catch {
-      return false;
     }
   }
 }
