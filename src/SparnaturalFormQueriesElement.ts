@@ -50,6 +50,11 @@ export class SparnaturalFormQueriesElement extends HTMLElement {
 
   private queries: PredefinedQuery[] = [];
 
+  // Set when the form is reset : the reset re-renders the form, which re-fires
+  // "init". The URL must not be re-applied then, otherwise Reset appears to do
+  // nothing on a page opened with pre-filling params.
+  private skipNextUrlPrefill = false;
+
   connectedCallback() {
     const form = this.resolveTargetForm();
     if (form) {
@@ -87,7 +92,18 @@ export class SparnaturalFormQueriesElement extends HTMLElement {
   // Wires URL pre-filling on the form's "init" event, and builds the dropdown
   // (if a "src" is given).
   private setup(form: FormElementLike): void {
-    form.addEventListener("init", () => this.prefillFromUrl(form));
+    form.addEventListener("init", () => {
+      if (this.skipNextUrlPrefill) {
+        this.skipNextUrlPrefill = false;
+        return;
+      }
+      this.prefillFromUrl(form);
+    });
+
+    // Fired by the form's Reset, just before it re-renders itself.
+    form.addEventListener("resetEditor", () => {
+      this.skipNextUrlPrefill = true;
+    });
 
     if (this.getAttribute("src")) {
       this.loadQueries().then(() => this.render(form));

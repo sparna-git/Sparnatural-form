@@ -40,8 +40,6 @@ class CleanQuery {
       resultType,
       this.formConfig,
     );
-    console.log("Type", resultType);
-
     this.variablesUsedInFormConfig = this.getFormVariables(this.formConfig);
 
     // re-list the variables used in the result set, after the previous filtering step
@@ -56,7 +54,6 @@ class CleanQuery {
     if (this.settings && this.settings.limit !== undefined) {
       cleanQueryResult.limit = this.settings.limit;
     }
-    console.log("CleanQuery: Query cleaned:", cleanQueryResult);
     return cleanQueryResult;
   }
 

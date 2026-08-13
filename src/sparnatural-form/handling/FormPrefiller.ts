@@ -114,7 +114,12 @@ export class FormPrefiller {
         );
         return;
       }
-      if (!value || !value.criteria) {
+      // A variable can carry several values for a multi-value field : the widget
+      // takes the array as is and the field injects the values one by one.
+      const list = (Array.isArray(value) ? value : [value]).filter(
+        (v) => v && v.criteria,
+      );
+      if (list.length === 0) {
         console.warn(
           `loadQuery: invalid value for variable "${variable}", skipping`,
           value,
@@ -122,7 +127,9 @@ export class FormPrefiller {
         return;
       }
 
-      field.widget.triggerRenderWidgetVal(value);
+      field.widget.triggerRenderWidgetVal(
+        list.length === 1 ? list[0] : list,
+      );
     });
   }
 

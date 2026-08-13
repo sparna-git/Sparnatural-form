@@ -193,18 +193,12 @@ class OptionalCriteriaManager {
     // Find the branch
     const branch = this.findBranch(this.query.branches);
 
-    // Log branch for debugging
-    console.log(`createOptionContainer: variable=${this.variable}`);
-    console.log(`  branch:`, branch);
-
     // Check if either the branch itself is optional, or any ancestor is optional
     const shouldCreateOptions =
       branch?.optional || this.hasOptionalAncestor(this.variable);
-    console.log(`  shouldCreateOptions=${shouldCreateOptions}`);
 
     if (!shouldCreateOptions) {
       // If neither the branch nor any ancestor is optional, skip creating options
-      console.log(`Skipping option creation for variable: ${this.variable}`);
       return;
     }
 
@@ -292,9 +286,6 @@ class OptionalCriteriaManager {
   private attachToggleListeners() {
     // Handle "Any Value" toggle changes
     this.anyValueToggle.addEventListener("change", () => {
-      console.log(
-        `anyValueToggle change for ${this.variable}: checked=${this.anyValueToggle.checked}`,
-      );
       if (this.anyValueToggle.checked) {
         // Suppression du conteneur d'options
         this.removeOptionContainer();
@@ -352,9 +343,6 @@ class OptionalCriteriaManager {
 
     // Handle "Not Exist" toggle changes
     this.notExistToggle.addEventListener("change", () => {
-      console.log(
-        `notExistToggle change for ${this.variable}: checked=${this.notExistToggle.checked}`,
-      );
       if (this.notExistToggle.checked) {
         // Suppression du conteneur d'options
         this.removeOptionContainer();
@@ -459,9 +447,6 @@ class OptionalCriteriaManager {
     // Si la variable n'est pas dans le formulaire, c'est une criteria pré-remplie
     // structurelle — on ne touche pas aux optional
     if (!this.formVariables.includes(variable)) {
-      console.log(
-        `clearOptionalChain: skipping for ${variable} (not a form variable)`,
-      );
       return;
     }
 
@@ -502,8 +487,6 @@ class OptionalCriteriaManager {
    * then continues up the chain.
    */
   public setAnyValueForWidget(variable: string) {
-    console.log(`Setting "Any value" for variable: ${variable}`);
-
     // Trouver l'ancêtre qui porte le optional:true initial
     const optionalAncestorVar = this.findOptionalAncestorVariable(variable);
 
@@ -513,9 +496,6 @@ class OptionalCriteriaManager {
         optionalAncestorVar,
       );
       if (ancestorBranch) {
-        console.log(
-          `Removing "optional: true" on optional ancestor: ${optionalAncestorVar}`,
-        );
         delete ancestorBranch.optional;
       }
     }
@@ -525,9 +505,6 @@ class OptionalCriteriaManager {
     let parent = this.findParentBranch(this.query.branches, current);
     while (parent) {
       if (parent.optional) {
-        console.log(
-          `Removing "optional: true" for ancestor above: ${parent.line.o}`,
-        );
         delete parent.optional;
       }
       current = parent.line.o;
@@ -539,8 +516,6 @@ class OptionalCriteriaManager {
    * Resets the branch and its ancestor chain to their initial optional states.
    */
   public resetToDefaultValueForWidget(variable: string) {
-    console.log(`Resetting to default state for variable: ${variable}`);
-
     const restoreInitialState = (
       branches: Branch[],
       targetVariable: string,
@@ -616,8 +591,6 @@ class OptionalCriteriaManager {
    * Si on clique "N'existe pas" sur LegalStatus, le notExists est mis sur Instruction_2.
    */
   public setNotExistsForWidget(variable: string) {
-    console.log(`Setting "notExists" for variable: ${variable}`);
-
     // Trouver l'ancêtre qui porte le optional:true initial
     const optionalAncestorVar = this.findOptionalAncestorVariable(variable);
 
@@ -627,9 +600,6 @@ class OptionalCriteriaManager {
         optionalAncestorVar,
       );
       if (ancestorBranch) {
-        console.log(
-          `Adding "notExists: true" on optional ancestor: ${optionalAncestorVar}`,
-        );
         ancestorBranch.notExists = true;
         delete ancestorBranch.optional;
       }
@@ -639,9 +609,6 @@ class OptionalCriteriaManager {
       let parent = this.findParentBranch(this.query.branches, current);
       while (parent) {
         if (parent.optional) {
-          console.log(
-            `Removing "optional: true" for ancestor above: ${parent.line.o}`,
-          );
           delete parent.optional;
         }
         current = parent.line.o;
@@ -651,9 +618,6 @@ class OptionalCriteriaManager {
       // Fallback : si aucun ancêtre optional trouvé, mettre sur la branche elle-même
       const branch = this.findBranchByVariable(this.query.branches, variable);
       if (branch) {
-        console.log(
-          `No optional ancestor found, adding "notExists: true" on variable itself: ${variable}`,
-        );
         branch.notExists = true;
         delete branch.optional;
       }
@@ -671,17 +635,6 @@ class OptionalCriteriaManager {
     } catch (err) {
       console.error("Error clearing criterias after setting notExists:", err);
     }
-
-    // Log the branch state for debugging
-    const optTarget = optionalAncestorVar || variable;
-    const updatedBranch = this.findBranchByVariable(
-      this.query.branches,
-      optTarget,
-    );
-    console.log(
-      `Branch state after setNotExists (target: ${optTarget}):`,
-      updatedBranch,
-    );
   }
 
   /**
@@ -689,15 +642,12 @@ class OptionalCriteriaManager {
    * Targets the correct ancestor that was marked with notExists.
    */
   public removeNotExistsForWidget(variable: string) {
-    console.log(`Removing "notExists" for variable: ${variable}`);
-
     // Trouver l'ancêtre qui portait le optional initial (et donc le notExists)
     const optionalAncestorVar = this.findOptionalAncestorVariable(variable);
     const targetVar = optionalAncestorVar || variable;
 
     const branch = this.findBranchByVariable(this.query.branches, targetVar);
     if (branch) {
-      console.log(`Deleting notExists on: ${targetVar}`);
       delete branch.notExists;
       const initialState = this.initialOptionalStates[targetVar];
       if (initialState) {

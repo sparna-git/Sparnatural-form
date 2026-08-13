@@ -29,7 +29,6 @@ export class QueryGeneratorForm {
     let queryToUse: SparnaturalQueryIfc = sparnaturalForm.cleanQueryResult;
     // Step 4: Translate the final clean query into SPARQL
     const settings = sparnaturalForm.settings;
-    console.log("settings for SPARQL generation:", settings);
     // Step 3: Further clean the query using CleanQuery for final processing
     const cleanQueryProcessor = new CleanQuery(
       queryToUse,
@@ -37,8 +36,6 @@ export class QueryGeneratorForm {
       settings
     );
     const finalCleanQuery = cleanQueryProcessor.cleanQueryToUse(resultType);
-
-    //console.log("Final Clean Query for SPARQL generation:", finalCleanQuery);
 
     const sparqlTranslator = new JsonSparqlTranslator(
       this.actionStoreForm.specProvider,
@@ -57,7 +54,6 @@ export class QueryGeneratorForm {
 
     // Step 6: Dispatch the event to update the editor and notify components
     this.fireQueryUpdatedEvent(queryPayload);
-    console.log("result Type :", resultType);
     // Re-enable the submit button if it was disabled
     sparnaturalForm.SubmitSection.enableSubmit();
 

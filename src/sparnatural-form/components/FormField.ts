@@ -87,7 +87,6 @@ class FormField {
 
       // Initialize OptionalCriteriaManager with formVariables
       const formVariables = this.getFormVariables();
-      console.log("Form variables for OptionalCriteriaManager:", formVariables);
       this.optionalCriteriaManager = new OptionalCriteriaManager(
         this.query,
         variable,
@@ -181,7 +180,6 @@ class FormField {
       { variable: queryLine.o, type: object },
     );
     widget.render();
-    // console.log("widget", widget);
     return widget;
   }
 
@@ -233,10 +231,8 @@ class FormField {
 
         const removeBtn = new UnselectBtn(widget, () => {
           selectedValues.delete(val);
-          console.log(selectedValues);
           updateValueDisplay();
           queryLine.criterias = Array.from(selectedValues);
-          console.log("QUERYLINE ", queryLine);
 
           // Clear widget's internal values (needed for MapWidget)
           if ((widget as any).widgetValues) {
@@ -272,17 +268,12 @@ class FormField {
 
     // Add an event listener to add values to the widget
     widget.html[0].addEventListener("renderWidgetVal", (e: CustomEvent) => {
-      //console.log("widget", widget);
-      console.log("e.detail", e.detail);
-
       let valueToInject: any[];
 
       // Handle different cases for e.detail
       if (Array.isArray(e.detail)) {
         // Case: e.detail is an array
         valueToInject = e.detail.map((item: any) => item);
-        console.log("here");
-        typeof valueToInject[0] === "string";
       } else if (e.detail.criteria) {
         // Case: e.detail contains a single value or a wrapped object
         valueToInject = Array.isArray(e.detail) ? e.detail : [e.detail];
@@ -290,8 +281,6 @@ class FormField {
         console.warn("Unexpected e.detail format:", e.detail);
         return; // Exit early if the format is not recognized
       }
-
-      console.log("valueToInject", valueToInject);
 
       valueToInject.forEach((val: any) => {
         // Check if same value already exists (skip silently, e.g. map close re-fires)

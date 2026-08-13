@@ -22,7 +22,6 @@ class ActionStoreForm {
     this.sparnaturalForm.html[0].addEventListener(
       "valueAdded",
       (event: CustomEvent) => {
-        console.log("Valeur ajoutée dans un widget !");
         new QueryGeneratorForm(this).generateQuery("onscreen");
       }
     );
@@ -31,7 +30,6 @@ class ActionStoreForm {
     this.sparnaturalForm.html[0].addEventListener(
       "valueRemoved",
       (event: CustomEvent) => {
-        console.log("Valeur supprimée d'un widget !");
         new QueryGeneratorForm(this).generateQuery("onscreen");
       }
     );
@@ -70,11 +68,6 @@ class ActionStoreForm {
     this.sparnaturalForm.html[0].addEventListener(
       "submit",
       (event: CustomEvent) => {
-        console.log("Submit event received", event.detail);
-        console.log(
-          "ActionStoreForm: Submit event received",
-          event.detail.type
-        );
         new QueryGeneratorForm(this).generateQuery(event.detail.type);
       }
     );

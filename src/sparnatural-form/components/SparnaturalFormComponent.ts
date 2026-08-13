@@ -86,10 +86,6 @@ class SparnaturalFormComponent extends HTMLComponent {
     // Adjust optional flags for all branches without removing them
     this.adjustOptionalFlags(copiedQuery.branches);
 
-    /*console.log(
-      "Adjusted query without branch removal:",
-      JSON.stringify(copiedQuery, null, 2)
-    );*/
     this.cleanQueryResult = copiedQuery; // update the global cleanQuery attribute
     return copiedQuery; // return the adjusted query
   }
@@ -243,7 +239,6 @@ class SparnaturalFormComponent extends HTMLComponent {
 
             // Initialisation des labels
             this.#initSparnaturalFormStaticLabels(formConfig);
-            console.log("Form configuration loaded successfully:", formConfig);
 
             // Reset the field registry before (re)generating the fields
             this.fieldRegistry.clear();
@@ -327,8 +322,6 @@ class SparnaturalFormComponent extends HTMLComponent {
   //methode to reset the form
 
   resetForm() {
-    console.log("Resetting the entire form...");
-
     // Effacer tous les éléments enfants du formulaire pour le vider
     while (this.html[0].firstChild) {
       this.html[0].removeChild(this.html[0].firstChild);
@@ -348,7 +341,6 @@ class SparnaturalFormComponent extends HTMLComponent {
 
     // Recréer le formulaire en appelant la méthode `render`
     this.render();
-    console.log("Form reset and re-rendered successfully.");
   }
 
   /**

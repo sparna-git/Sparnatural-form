@@ -35,11 +35,11 @@ export interface Name {
 export type PrefillValue = LabelledCriteria<Criteria>;
 
 /**
- * A "flat" query : a mapping from a form variable to the single value
- * that must be pre-selected for that field.
+ * A "flat" query : a mapping from a form variable to the value to pre-select
+ * for that field, or an array of values for a multi-value field.
  */
 export interface FlatQueryValues {
-  [variable: string]: PrefillValue;
+  [variable: string]: PrefillValue | PrefillValue[];
 }
 
 /**
