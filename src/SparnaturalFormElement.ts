@@ -5,7 +5,7 @@ import { SparnaturalFormAttributes } from "./SparnaturalFormAttributes";
 import { defaultSettings, extend } from "./sparnatural-form/settings/Settings";
 import ISettings from "./sparnatural-form/settings/ISettings";
 import { SparqlHandlerFactory, SparqlHandlerIfc } from "rdf-shacl-commons";
-import { RawQueryValues } from "./sparnatural-form/FormStructure";
+import { FlatQueryValues, RawQueryValues } from "./sparnatural-form/FormStructure";
 
 /*
   This is the sparnatural-form HTMLElement. 
@@ -126,8 +126,9 @@ export class SparnaturalFormElement extends HTMLElement {
     }
   }
 
-  // Prefills from a flat query (variable -> { label, criteria }).
-  loadQuery(values: { [variable: string]: any }) {
+  // Prefills from a flat query : variable -> { label, criteria }, an array of
+  // those, or { anyValue: true } / { notExists: true }.
+  loadQuery(values: FlatQueryValues) {
     this.sparnaturalForm.loadQuery(values);
   }
 

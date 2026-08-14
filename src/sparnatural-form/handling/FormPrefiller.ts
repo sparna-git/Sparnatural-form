@@ -1,5 +1,10 @@
 import { FieldHandle } from "../components/FormField";
-import { FlatQueryValues, RawQueryValues } from "../FormStructure";
+import {
+  FlatQueryValues,
+  PrefillOption,
+  PrefillValue,
+  RawQueryValues,
+} from "../FormStructure";
 
 // Keywords a URL raw value can use instead of an actual value :
 //  - UNKNOWN : the field has no value (SPARQL "Unknown" / not exist) ;
@@ -8,8 +13,19 @@ import { FlatQueryValues, RawQueryValues } from "../FormStructure";
 const KEYWORD_UNKNOWN = "UNKNOWN";
 const KEYWORD_ANY = "ANY";
 
+// Le formulaire vu par le prefiller : mode quiet + regénération de la requête,
+// comme QueryLoader pilote SparnaturalComponent dans Sparnatural.
+export interface PrefillTarget {
+  setQuiet(quiet: boolean): void;
+  triggerQueryGeneration(): void;
+}
+
 export class FormPrefiller {
   private fieldRegistry: Map<string, FieldHandle>;
+  private form?: PrefillTarget;
+
+  // Vrai pendant un chargement, tant que les événements sont coupés.
+  private quiet = false;
 
   // Values requested before the form was rendered, applied in applyPending().
   private pendingPrefill: FlatQueryValues | null = null;
@@ -24,8 +40,23 @@ export class FormPrefiller {
   private pendingResolve: (() => void) | null = null;
   private pendingCount = 0;
 
-  constructor(fieldRegistry: Map<string, FieldHandle>) {
+  constructor(fieldRegistry: Map<string, FieldHandle>, form?: PrefillTarget) {
     this.fieldRegistry = fieldRegistry;
+    this.form = form;
+  }
+
+  // Coupe l'émission des "queryUpdated" pendant le chargement.
+  private beginQuiet(): void {
+    this.quiet = true;
+    this.form?.setQuiet(true);
+  }
+
+  // Rétablit l'émission et déclenche une seule mise à jour, chargement terminé.
+  private endQuiet(): void {
+    if (!this.quiet) return;
+    this.quiet = false;
+    this.form?.setQuiet(false);
+    this.form?.triggerQueryGeneration();
   }
 
   // Promise that settles when the current raw-criteria prefill is fully applied.
@@ -100,9 +131,11 @@ export class FormPrefiller {
   }
 
   // Resets then injects the flat query values into the matching widgets.
+  // Entièrement synchrone : quiet est levé juste après l'injection.
   private applyPrefill(values: FlatQueryValues): void {
     console.log("Applying prefill values:", values);
 
+    this.beginQuiet();
     this.clearAllFields();
     this.generation++;
 
@@ -114,10 +147,14 @@ export class FormPrefiller {
         );
         return;
       }
+      // { anyValue: true } / { notExists: true } drive the field options instead
+      // of setting a value, like the ANY / UNKNOWN keywords in a URL.
+      if (this.applyOption(field, variable, value)) return;
+
       // A variable can carry several values for a multi-value field : the widget
       // takes the array as is and the field injects the values one by one.
       const list = (Array.isArray(value) ? value : [value]).filter(
-        (v) => v && v.criteria,
+        (v): v is PrefillValue => !!v && !!(v as PrefillValue).criteria,
       );
       if (list.length === 0) {
         console.warn(
@@ -131,12 +168,16 @@ export class FormPrefiller {
         list.length === 1 ? list[0] : list,
       );
     });
+
+    this.endQuiet();
   }
 
   // Resets then asks each field's widget to resolve/parse its raw value.
+  // Asynchrone : quiet n'est levé qu'une fois toutes les valeurs posées.
   private applyRawCriteria(values: RawQueryValues): void {
     console.log("Applying raw criteria:", values);
 
+    this.beginQuiet();
     this.clearAllFields();
     const generation = ++this.generation;
 
@@ -173,6 +214,52 @@ export class FormPrefiller {
     this.onRawValueSettled(generation);
   }
 
+  // Lit un marqueur { anyValue } / { notExists } et l'applique. Rend true si la
+  // valeur était bien un marqueur, que le champ ait pu l'honorer ou non.
+  private applyOption(
+    field: FieldHandle,
+    variable: string,
+    value: FlatQueryValues[string],
+  ): boolean {
+    if (!value || Array.isArray(value) || (value as PrefillValue).criteria) {
+      return false;
+    }
+
+    // notExists l'emporte si les deux sont posés
+    const option = value as PrefillOption;
+    if (option.notExists) {
+      this.activateOption(field, variable, "notExists", '"notExists"');
+      return true;
+    }
+    if (option.anyValue) {
+      this.activateOption(field, variable, "anyValue", '"anyValue"');
+      return true;
+    }
+    return false;
+  }
+
+  // Coche l'option "Any known value" / "Unknown" d'un champ. Chemin commun au
+  // JSON ({ anyValue: true }) et à l'URL simple (ANY / UNKNOWN).
+  private activateOption(
+    field: FieldHandle,
+    variable: string,
+    option: "anyValue" | "notExists",
+    requested: string,
+  ): boolean {
+    const manager = field.optionalCriteriaManager;
+    const applied =
+      option === "notExists"
+        ? manager?.activateNotExist()
+        : manager?.activateAnyValue();
+
+    if (!applied) {
+      console.warn(
+        `prefill: ${requested} requested for "${variable}" but this field has no Any known value / Unknown option, skipping`,
+      );
+    }
+    return !!applied;
+  }
+
   // Looks up a field by variable, first exactly then case-insensitively so a URL
   // param like ?season=... matches a "Season" field.
   private findField(variable: string): FieldHandle | undefined {
@@ -202,16 +289,12 @@ export class FormPrefiller {
     // instead of setting a widget value.
     const keyword = raw.trim().toUpperCase();
     if (keyword === KEYWORD_UNKNOWN || keyword === KEYWORD_ANY) {
-      const manager = field.optionalCriteriaManager;
-      const applied =
-        keyword === KEYWORD_UNKNOWN
-          ? manager?.activateNotExist()
-          : manager?.activateAnyValue();
-      if (!applied) {
-        console.warn(
-          `loadQueryFromCriteria: "${raw}" requested for "${variable}" but this field has no Unknown/Any option, skipping`,
-        );
-      }
+      this.activateOption(
+        field,
+        variable,
+        keyword === KEYWORD_UNKNOWN ? "notExists" : "anyValue",
+        `"${raw}"`,
+      );
       return;
     }
 
@@ -248,6 +331,9 @@ export class FormPrefiller {
   }
 
   private settleRawCriteria(): void {
+    // Quiet levé avant de résoudre la promesse : l'auto-submit qui l'attend doit
+    // retrouver un formulaire qui émet à nouveau ses événements.
+    this.endQuiet();
     if (this.pendingResolve) {
       this.pendingResolve();
       this.pendingResolve = null;

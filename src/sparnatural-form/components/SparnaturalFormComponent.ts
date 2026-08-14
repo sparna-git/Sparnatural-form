@@ -52,7 +52,7 @@ class SparnaturalFormComponent extends HTMLComponent {
 
   // Handles all the pre-filling logic (loadQuery / loadQueryFromCriteria), kept
   // out of this class. Shares the fieldRegistry by reference.
-  private prefiller: FormPrefiller = new FormPrefiller(this.fieldRegistry);
+  private prefiller: FormPrefiller = new FormPrefiller(this.fieldRegistry, this);
 
   constructor(settings: ISettings) {
     // this is a root component : Does not have a ParentComponent!
@@ -190,7 +190,13 @@ class SparnaturalFormComponent extends HTMLComponent {
 
       this.initJsonQuery((query: SparnaturalQueryIfc) => {
         this.jsonQuery = query;
-        this.actionStoreForm = new ActionStoreForm(this, this.specProvider);
+        // Le reset re-render sur le même élément : réutiliser le store existant,
+        // sinon ses écouteurs s'empilent et queryUpdated part en double.
+        if (this.actionStoreForm) {
+          this.actionStoreForm.specProvider = this.specProvider;
+        } else {
+          this.actionStoreForm = new ActionStoreForm(this, this.specProvider);
+        }
 
         // Charger le fichier de configuration du formulaire (JSON ou YAML)
         const formUrl = this.settings.form;
@@ -369,6 +375,17 @@ class SparnaturalFormComponent extends HTMLComponent {
    */
   public whenPrefillApplied(): Promise<void> {
     return this.prefiller.whenRawCriteriaApplied();
+  }
+
+  // Quand quiet est vrai, aucun événement queryUpdated n'est émis : utilisé
+  // pendant le chargement d'une requête, pour n'en émettre qu'un seul à la fin.
+  public setQuiet(quiet: boolean) {
+    if (this.actionStoreForm) this.actionStoreForm.quiet = quiet;
+  }
+
+  // Redéclenche la génération de la requête, et donc l'événement queryUpdated.
+  public triggerQueryGeneration() {
+    this.html[0].dispatchEvent(new CustomEvent("generateQuery"));
   }
 
   /**

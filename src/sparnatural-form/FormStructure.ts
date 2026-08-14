@@ -35,11 +35,22 @@ export interface Name {
 export type PrefillValue = LabelledCriteria<Criteria>;
 
 /**
+ * Instead of a value, a field can be pre-filled with one of its two options :
+ * "Any known value" ({ anyValue: true }) or "Unknown" ({ notExists: true }).
+ * URL equivalents in the simple mode : ?Var=ANY and ?Var=UNKNOWN.
+ */
+export interface PrefillOption {
+  anyValue?: boolean;
+  notExists?: boolean;
+}
+
+/**
  * A "flat" query : a mapping from a form variable to the value to pre-select
- * for that field, or an array of values for a multi-value field.
+ * for that field, an array of values for a multi-value field, or one of the
+ * "Any known value" / "Unknown" options.
  */
 export interface FlatQueryValues {
-  [variable: string]: PrefillValue | PrefillValue[];
+  [variable: string]: PrefillValue | PrefillValue[] | PrefillOption;
 }
 
 /**

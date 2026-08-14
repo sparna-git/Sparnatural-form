@@ -17,6 +17,15 @@ class ActionStoreForm {
 
   // Ajouter les écouteurs d'événements sur les actions du formulaire
   #addFormEventListeners() {
+    // Régénération demandée explicitement, à la fin d'un chargement de requête
+    this.sparnaturalForm.html[0].addEventListener(
+      "generateQuery",
+      (event: CustomEvent) => {
+        event.stopImmediatePropagation();
+        new QueryGeneratorForm(this).generateQuery("onscreen");
+      }
+    );
+
     // Quand une valeur est ajoutée à un widget
 
     this.sparnaturalForm.html[0].addEventListener(
